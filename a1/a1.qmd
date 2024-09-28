@@ -10,7 +10,7 @@ format:
 editor: visual
 ---
 
-## **Exploratory / Pre-processing**
+## Exploratory / Pre-processing
 
 ### Exercise 1
 
@@ -23,6 +23,8 @@ c\. Supervised
 ```{r}
 
 abalone <- read.csv(("abalone.data"))
+abalone$M <- as.factor(abalone$M)
+abalone$M <- relevel(abalone$M, ref = "F")
 
 str(abalone)
 
@@ -58,6 +60,7 @@ sampleSize <- floor(0.5 * nrow(abalone))
 set <- sample(seq_len(nrow(abalone)), size = sampleSize)
 
 abaloneTrain <- abalone[set, ]
+
 abaloneTest <- abalone[-set, ]
 
 abaloneTrain
@@ -65,7 +68,7 @@ abaloneTest
 
 ```
 
-## **Simple Linear Regression**
+## Simple Linear Regression
 
 ### **Exercise 5**
 
@@ -74,11 +77,11 @@ abaloneTrain.lm <- lm(X15 ~ X0.455,data=abaloneTrain)
 summary(abaloneTrain.lm)
 ```
 
-Since the p value for the length coefficient is incredibly small at $2 \times 10^{-16}$, we can safely say that there is a significant relationship between abalone's length and rings.
+Since the p value for the **length** coefficient is incredibly small at $2 \times 10^{-16}$, we can safely say that there is a significant relationship between abalone's **length** and **rings**.
 
 ### Exercise 6
 
-The coefficient of determination, $R^2$ , also known as the Multiple R-squared value, is at $0.2846$. This therefore, means that about $28.46%$ of the presented abalone's ring is explainable by the abalone's length.
+The **coefficient of determination**, $R^2$ , also known as the **Multiple R-squared** value, is at $0.2846$. This therefore, means that about $28.46%$ of the presented abalone's **ring** is explainable by the abalone's **length**.
 
 ### Exercise 7
 
@@ -148,10 +151,219 @@ By adding the `Sex` as a categorical predictor in the regression model, we can c
 
 <!-- -->
 
--   **Model with only Length (X0.455):** Adjusted R-squared = 0.2843
+-   **Model with only Length (X0.455):** Adjusted R-squared = $0.2843$
 
--   **Model with Length + Sex (X0.455 + M):** Adjusted R-squared = 0.3051
+-   **Model with Length + Sex (X0.455 + M):** Adjusted R-squared = $0.3051$
 
-The adjusted R-squared value increased from 0.2843 to 0.3051, indicating that adding `Sex` as a predictor improves the model fit by explaining more variance in the response variable.
+The adjusted R-squared value increased from $0.2843$ to $0.3051$, indicating that adding `Sex` as a predictor improves the model fit by explaining more variance in the response variable.
 
 Therefore, we can conclude that, adding the `Sex` as a categorical predictor variable significantly improves the model.
+
+### Exercise 12
+
+```{=tex}
+\begin{equation}
+Rings = 
+\begin{cases} 
+  \hat{Y} = 4.2695 + 11.8890 \cdot X0.455 & \text{if Female} \\
+  \hat{Y} = 4.2695 + 11.8890 \cdot X0.455 - 0.2582 & \text{if Male} \\
+  \hat{Y} = 4.2695 + 11.8890 \cdot X0.455 - 1.3311 & \text{if Infant}
+\end{cases}
+\end{equation}
+```
+### Exercise 13
+
+The reference level for the model fitted in Exercise 11 is **Female** because the coefficients for both, `M = "M"` and `M = "I"` are provided, therefore, their values are interpreted with relative to the reference category, `M = "F"`.
+
+### Exercise 14
+
+Based on this data, and the predicted $\hat{Y}$ shown above, it seems to be that the **female** abalone tend to have the oldest average age, then **male**, then **infant**.
+
+### Exercise 15
+
+```{r}
+
+abaloneTrain.lm3withWholeWeight <- lm(X15 ~ X0.455 + M + X0.514, data=abaloneTrain)
+
+abaloneTrain.forward <- step(abaloneTrain.lm3, scope = list(lower = abaloneTrain.lm3, upper = abaloneTrain.lm3withWholeWeight), direction = "forward")
+
+summary(abaloneTrain.forward)
+
+```
+
+For this forward selection model, I have selected `X0.514` which is the `Whole_weight` variable where it measures the whole abalone's we
+
+## **Multiple Linear Regression**
+
+### Exercise 16
+
+```{r}
+numeric_columns <- sapply(abalone, is.numeric)
+
+corTable <- cor(abalone[, numeric_columns])
+diag(corTable) <- NA
+
+maxCor <- max(corTable, na.rm = TRUE)
+
+maxCorIndex <- which(corTable == maxCor, arr.ind = TRUE)
+
+corTable
+maxCor
+maxCorIndex
+```
+
+Ignoring correlation between the predictor and itself, the highest correlation we have is the two variables, `X0.365` and `X0.455` which is the variable **Length** and **Diameter**, both being highly correlated to each other out of the other pairs.
+
+Implications of this **multicollinearity** is:
+
+-   **Unstable coefficient estimates**: the coefficients of the correlated predictors can become very sensitive to small changes in the model that we have. Small changes can lead to very skewed outcome.
+
+-   **Inflated standard errors**: high correlation between predictors can inflate standard errors of coefficient estimates.
+
+-   **Reduction of overall interpretability**: it will be difficult to determine the effect of each predictor in the response variable. High correlation means it is providing redundant information.
+
+### Exercise 17
+
+```{r}
+abaloneTrain.lm4 <- lm(X15 ~ X0.455 + X0.514, data=abaloneTrain)
+summary(abaloneTrain.lm4)
+```
+
+Comparing the **R-squared** and **Adjusted R-squared** values for this model with **Exercise 5**, we see that in **Exercise 5**, we have a linear model of **Rings** as a response variable and **Length** as the predictor variable:
+
+-   **Multiple R-squared**: $0.2846$
+
+-   **Adjusted R-squared**: $0.2843$
+
+Here, when we have a linear model of **Rings** as a response variable and **Length** and **Whole Weight** as the predictor variable:
+
+-   **Multiple R-squared**: $0.2888$
+
+-   **Adjusted R-squared**: $0.2882$
+
+What do these values tell us: The **Multiple R-squared** value increased from $0.2846$ to $0.2888$. This indicates that the addition of **Whole Weight** as a predictor has just slightly improved the model. The **Adjusted R-squared** value also increased from $0.2843$ to $0.2882$. This suggests that the improvement in the model’s performance is not just due to the addition of a new predictor, but that **Whole Weight** actually contributes meaningful information to the model.
+
+Why the difference: **Multiple R-squared** will always be increased when there are new predictor variable introduced even if the new predictors doesn't improve the model significantly, and that is why **Adjusted R-squared** will provide a more accurate measure of model performance by penalizing the contribution of unnecessary predictors.
+
+### Exercise 18
+
+```{r}
+interactionModel <- lm(X15 ~ X0.455 * X0.514, data = abaloneTrain)
+summary(interactionModel)
+```
+
+The **interaction term** `X0.445:X0.514` has a very low p-value at $2 \times 10^{-16}$, making it statistically significant. The negative coefficient of the interaction term suggests that, as the variable **Whole Weight** increases, the effect of **Length** on the number of **Rings** decreases.
+
+### Exercise 19
+
+```{r}
+multipleRegression <- lm (X15 ~ ., data = abaloneTrain)
+summary(multipleRegression)
+```
+
+The predictors that are statistically significant (p-value $< 0.05$) are:
+
+1.  **MI (Sex = Infant)**: p-value $= 3.96 \times 10^{-06}$
+
+2.  **X0.365 (Diameter)**: p-value $= 0.00777$
+
+3.  **X0.095 (Height)**: p-value $= 4.71 \times 10^{-06}$
+
+4.  **X0.514 (Whole Weight)**: p-value = $2.77 \times 10^{-16}$
+
+5.  **X0.2245 (Shucked Weight)**: p-value $< 2 \times 10^{-16}$
+
+6.  **X0.101 (Viscera Weight)**: p-value $= 1.72 \times 10^{-08}$
+
+7.  **X0.15 (Shell Weight)**: p-value $= 2.75 \times 10^{-09}$
+
+### Exercise 20
+
+I would have chose:
+
+1.  **MM (Sex = Male)**: The p-value is 0.31769 which is not statistically significant, therefore it is unlikely to have impact on the model's performance.
+
+2.  **X0.455 Length**: The p-value is 0.61741, which is also not statistically significant, and also, it is highly correlated with the **Diameter**.
+
+I would expect the model's prediction to be better, where the **Adjusted R-squared** value is much higher of any of the observed model that we have created throughout this exercise.
+
+### Exercise 21
+
+```{r}
+myModel <- lm(X15 ~ M + X0.365 + X0.095 + X0.514 + X0.2245 + X0.101 + X0.15, data = abaloneTrain)
+summary(myModel)
+
+plot(myModel, pch = 16, cex=0.3)
+
+```
+
+I chose this model because I excluded the variables that were not statistically significant, such as the variables **M = "M" (Sex = Male)** and **X0.455 Length.**\
+
+This model performed a little bit better than the all of the other models because the **Adjusted R-squared** is also up by $0.0002$
+
+## Model Comparison
+
+### Exercise 22
+
+| Exercise | Adjusted $R^2$ | $RSE$                                              | $MSE_{test}$                                                                                    |
+|----------------|----------------|-----------------|----------------------|
+| 5        | 0.2843         | `r summary(abaloneTrain.lm)$sigma`                 | `r mean((predict(abaloneTrain.lm, newdata = abaloneTest) - abaloneTest$X15)^2)`                 |
+| 10       | 0.2932         | `r summary(abaloneTrain.lm2)$sigma`                | `r mean((predict(abaloneTrain.lm2, newdata = abaloneTest) - abaloneTest$X15)^2)`                |
+| 11       | 0.3051         | `r summary(abaloneTrain.lm3)$sigma`                | `r mean((predict(abaloneTrain.lm3, newdata = abaloneTest) - abaloneTest$X15)^2)`                |
+| 12       |                |                                                    |                                                                                                 |
+| 11       |                |                                                    |                                                                                                 |
+| 15       | 0.3069         | `r summary(abaloneTrain.lm3withWholeWeight)$sigma` | `r mean((predict(abaloneTrain.lm3withWholeWeight, newdata = abaloneTest) - abaloneTest$X15)^2)` |
+| 17       | 0.2882         | `r summary(abaloneTrain.lm4)$sigma`                | `r mean((predict(abaloneTrain.lm4, newdata = abaloneTest) - abaloneTest$X15)^2)`                |
+| 18       | 0.3286         | `r summary(interactionModel)$sigma`                | `r mean((predict(interactionModel, newdata = abaloneTest) - abaloneTest$X15)^2)`                |
+| 19       | 0.5058         | `r summary(multipleRegression)$sigma`              | `r mean((predict(multipleRegression, newdata = abaloneTest) - abaloneTest$X15)^2)`              |
+| 21       | 0.506          | `r summary(myModel)$sigma`                         | `r mean((predict(myModel, newdata = abaloneTest) - abaloneTest$X15)^2)`                         |
+
+### Exercise 23
+
+For the best model to be picked, we have to follow these criteria:
+
+1.  **Adjusted** $R^2$ **:** Higher values indicate a better fit.
+
+2.  **RSE:** Lower values indicate a better fit.
+
+3.  **MSE:** Lower values indicate a better fit.
+
+Therefore, our best models listed from above should be the one from **Exercise 19** and **Exercise 21** where all of the criteria are very similar and is the closest we can get to our criteria out of all of the other models.
+
+## KNN Regression
+
+```{r}
+
+library(caret)
+knn_mse_test = NULL
+
+for (k in c(10, 50, 100, 200, 300)){
+  kmod <- knnreg(X15 ~ X0.455, data = abaloneTrain, k = k)
+  yhat = predict(kmod, abaloneTest)
+  knn_mse_test[k] = mean((abaloneTest$X0.455 - yhat)^2)
+}
+
+plot(knn_mse_test, type = "b", ylab = "MSE test", xlab = "k", main = "KNN regression")
+```
+
+### Exercise 24
+
+-   **k = 10,** The MSE is relatively high, suggesting that it is over-fitting the data, therefore, high variance, low bias.
+
+-   **k = 50,** The model has a very low MSE test value, lower than all the other k indices, making it the optimal balance between bias and variance. Also we see MSE decreasing as well from **k = 10** which implies that increasing the **k** helps reduce variance and improve the model's performance.
+
+-   **k = 100,** The MSE starts to increase, indicating that the model is starting to under-fitting as **k** increases.
+
+-   **k = 200,** The MSE is at its highest, indicating that model has a very low variance but very bias to the training set.
+
+-   **k = 300,** The MSE starts to fall off again, but it is still higher than **k = 50**.
+
+Now we know, visually, that the optimal model lies somewhere around **k = 50** where it has a balance between variance and bias.
+
+### Exercise 25
+
+The model is **over-fitting** the data at **k = 10**. Because when **k** is low, the model is highly sensitive to the training data. It basically memorizes the training examples, capturing the noise in the data and the pattern as well. This results in high variance, where the model performs well on the training data but very poorly on new unseen data, leading to a high test MSE.
+
+### Exercise 26
+
+Based on the observed MSE values, I would pick **k = 50,** where the model is at its most optimal state and provides the best bias-variance trade off because it has the lowest MSE test value.
