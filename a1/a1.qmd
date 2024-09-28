@@ -32,7 +32,7 @@ str(abalone)
 
 ```{r}
 
-hist(abalone$X15, xlab = "Abalone age", ylab = "Abalone count", main = "Histogram of abalone count vs abalone age")
+hist(abalone$X15, xlab = "Abalone age",breaks=30 , ylab = "Abalone count", main = "Histogram of abalone count vs abalone age")
 ```
 
 We see that this is an observation of a skewed normally distributed histogram. This should not break any assumptions of the linear model because in a linear model, we should have a data that follows:
@@ -74,7 +74,7 @@ abaloneTrain.lm <- lm(X15 ~ X0.455,data=abaloneTrain)
 summary(abaloneTrain.lm)
 ```
 
-Since the p value for the length coefficient is incredibly small at ($< 2 \times 10^-16$), we can safely say that there is a significant relationship between abalone's length and rings.
+Since the p value for the length coefficient is incredibly small at $2 \times 10^{-16}$, we can safely say that there is a significant relationship between abalone's length and rings.
 
 ### Exercise 6
 
@@ -83,8 +83,8 @@ The coefficient of determination, $R^2$ , also known as the Multiple R-squared v
 ### Exercise 7
 
 ```{r}
-plot(abaloneTrain$X0.455, abaloneTrain$X15, xlab="Abalone length (mm)", ylab="Abalone rings"
-     ,pch=16,cex=0.3, main = "Scatter plot of rings vs length")
+plot(abaloneTrain$X0.455, abaloneTrain$X15, xlab="Abalone length (mm)", ylab="Abalone rings",
+     pch=16,cex=0.3, main = "Scatter plot of rings vs length")
 abline(abaloneTrain.lm, col = "red")
 
 ```
@@ -96,13 +96,62 @@ abline(abaloneTrain.lm, col = "red")
 ### Exercise 8
 
 ```{r}
-qqnorm(residuals(abaloneTrain.lm), main="Q-Q Plot of Residuals", pch=16, cex=0.3)
-qqline(residuals(abaloneTrain.lm), col="red")
-hist(residuals(abaloneTrain.lm), breaks=30, main="Histogram of Residuals", xlab="Residuals", col="lightblue")
+plot(abaloneTrain.lm, which = 2, pch=16, cex=0.3)
+plot(abaloneTrain.lm, which = 3, pch=16, cex=0.3)
 ```
 
-The normality of the residuals is not satisfied because the historgrams shows that it is heavily skewed, and the quantile-quantile plot shows that it does not fall within the quantile-quantile line.
+**QQ Residual** plot indicates that the residuals are not normally distributed and the **scale-location** has a pattern, and does not have a constant variance between each residuals, and it does not appear that they are scattered randomly along the red line, indicating that the homoscedasticity of this linear model is violated. Therefore, this model is **biased**.
+
+### Exercise 9
+
+```{r}
+plot(abaloneTrain.lm, which = 1, pch=16, cex=0.3)
+```
+
+**Residuals vs fitted** plot shows that there are patterns in the plot, which suggests that the relationship between the predictor and response variable is not purely linear and this suggests that the model is giving a biased estimate.
 
 ## **Multiple Linear Regression**
 
 ### Exercise 10
+
+```{r}
+abaloneTrain.lm2 <- lm(X15 ~ X0.455 + I(X0.455^2), data=abaloneTrain)
+summary(abaloneTrain.lm2)
+
+
+plot(abaloneTrain.lm2, pch=16, cex=0.3)
+
+```
+
+1.  **P-value:** The p-value of the polynomial term, `I(X0.455^2)` equates to $1.78 \times 10^{-7}$ which is much less than $0.05$ so it is still statistically significant.
+2.  **Adjusted R-squared: T**he adjusted R-squared value has increased from $0.2843$ in the linear model to $0.2932$ in the polynomial model, indicating a better fit with the inclusion of the quadratic term.
+3.  **Residual Standard Error**: The residual standard error has slightly decreased from 2.732 in the linear model to 2.715 in the polynomial model, indicating a better fit.
+4.  **Violations:**
+    -   **Linearity violated:** the **Residuals vs Fitted** plot shows us a very pattern-heavy plot, making it non-linear, as we look for random scatters around the red-line.
+    -   **Normality violated:** the **QQ Residuals** plot shows us that the residual points does not lie on the dashed-line, making it not normally distributed,
+    -   **Homoscedasticity violated:** the **Scale-Location** plot is showing us patterns with no constant variance.
+    -   **Independence not violated:** the **Residuals vs Leverage** plot is showing us that there are no points that clearly lies outside of **Cook's distance**, so it does not have disproportionate impact on the model.
+
+### Exercise 11
+
+```{r}
+abaloneTrain.lm3 <- lm(X15 ~ X0.455 + M, data=abaloneTrain)
+summary(abaloneTrain.lm3)
+
+```
+
+By adding the `Sex` as a categorical predictor in the regression model, we can clearly that:
+
+-   **`MI`** (Sex = I) is highly significant with a p-value of $2.07 \times 10^{-14}$.
+
+-   **`MM`** (Sex = M) is marginally significant with a p-value of $0.0739$.
+
+<!-- -->
+
+-   **Model with only Length (X0.455):** Adjusted R-squared = 0.2843
+
+-   **Model with Length + Sex (X0.455 + M):** Adjusted R-squared = 0.3051
+
+The adjusted R-squared value increased from 0.2843 to 0.3051, indicating that adding `Sex` as a predictor improves the model fit by explaining more variance in the response variable.
+
+Therefore, we can conclude that, adding the `Sex` as a categorical predictor variable significantly improves the model.
