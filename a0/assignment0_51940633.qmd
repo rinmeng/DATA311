@@ -1,0 +1,65 @@
+---
+title: "Assignment 0"
+subtitle: "DATA311 - Machine Learning"
+author: "Rin Meng, 51940633"
+toc: true
+format:
+  html:
+    embed-resources: true
+    df-print: paged
+editor: visual
+---
+
+# Introduction
+
+Hello! My name is ***Rin***. I am in ***3rd year*** pursuing BSc ***Major Computer Science***, ***Minor in Data Science.***
+
+![Figure 1: Image of the center of Downtown, Calgary.](calgary.jpeg){style="text-align:center;" fig-align="center"}
+
+# Data Wrangling
+
+```{r}
+# 5 import df
+df <- read.csv("sales_data.csv")
+
+# 6 print head and srt of df
+head(df)
+str(df)
+
+# 7 print non duplicates
+unique(df)
+
+# 8 check for missing values
+na_count <- data.frame(colSums(is.na(df)))
+names(na_count) <- "na_count"
+na_count
+
+# 9 filter sales to new york
+newYorkSales = df[df$Store.Location == 'New York',]
+newYorkSales
+
+# 10 highest sale in new york
+newYorkSales[which.max(newYorkSales$Price),"Date"]
+
+# 11 determine the most frequently payment method used by customer
+payments <- table(newYorkSales$Payment.Method)
+names(payments)[which.max(payments)]
+```
+
+# Data Visualization
+
+```{r fig.width=5, fig.height=10, fig.align='center'}
+# 12 Create a histogram of Customer Age and label the x-axis as “Customer Age”. Adjust the plot dimensions so that it is taller than it is wide.
+hist(df$Customer.Age, main = "Histogram of Customer Age", xlab="Customer Age" , ylim = c(0, 10))
+```
+
+```{r}
+#| label: fig-q-vs-p
+#| fig-cap: "Relationship between Quantity and Price"
+#| fig-align: 'center'  
+# 13 Scatter plot of x = quantity sold vs y = price
+plot(Price ~ Quantity.Sold , data = df, xlab = 'Quantity Sold', ylab='Price', main = 'Relationship between Quantity and Price')
+
+```
+
+14. Based on the scatter plot @fig-q-vs-p, it seems that people tend to buy less if the price is expensive, and more if the price is cheap.

@@ -1,0 +1,32 @@
+Date,Order ID,Product Name,Category,Price,Quantity Sold,Total Sales,Customer ID,Customer Age,Customer Gender,Payment Method,Store Location
+2023-01-01,ORD1001,Smartphone,Mobile,299.99,1,299.99,CUST500,34,Female,Credit Card,New York
+2023-01-02,ORD1002,Laptop,Computers,899.99,2,1799.98,CUST501,29,Male,Cash,Los Angeles
+2023-01-03,ORD1003,Headphones,Accessories,49.99,3,149.97,CUST502,42,Non-binary,PayPal,Chicago
+2023-01-04,ORD1004,Tablet,Mobile,199.99,1,199.99,CUST503,38,Female,Credit Card,New York
+2023-01-05,ORD1005,Smartphone,Mobile,299.99,2,599.98,CUST504,25,Male,Credit Card,Chicago
+2023-01-06,ORD1006,Smartwatch,Accessories,149.99,1,149.99,CUST505,31,Female,Cash,Los Angeles
+2023-01-07,ORD1007,Laptop,Computers,799.99,1,799.99,CUST506,27,Male,PayPal,New York
+2023-01-08,ORD1008,Tablet,Mobile,249.99,2,499.98,CUST507,40,Non-binary,Credit Card,Chicago
+2023-01-09,ORD1009,Smartphone,Mobile,349.99,1,349.99,CUST508,35,Female,Credit Card,Los Angeles
+2023-01-10,ORD1010,Headphones,Accessories,59.99,2,119.98,CUST509,33,Male,Cash,New York
+2023-01-11,ORD1011,Tablet,Mobile,199.99,1,199.99,CUST510,26,Female,Credit Card,Chicago
+2023-01-12,ORD1012,Laptop,Computers,949.99,1,949.99,CUST511,44,Male,Cash,New York
+2023-01-13,ORD1013,Smartwatch,Accessories,129.99,3,389.97,CUST512,37,Female,PayPal,Los Angeles
+2023-01-14,ORD1014,Smartphone,Mobile,399.99,2,799.98,CUST513,22,Non-binary,Credit Card,Chicago
+2023-01-15,ORD1015,Headphones,Accessories,89.99,1,89.99,CUST514,45,Male,Cash,New York
+2023-01-16,ORD1016,Tablet,Mobile,299.99,1,299.99,CUST515,30,Female,Credit Card,Los Angeles
+2023-01-17,ORD1017,Laptop,Computers,999.99,1,999.99,CUST516,39,Male,PayPal,Chicago
+2023-01-18,ORD1018,Smartwatch,Accessories,179.99,2,359.98,CUST517,32,Female,Credit Card,New York
+2023-01-19,ORD1019,Smartphone,Mobile,249.99,1,249.99,CUST518,28,Male,Cash,Los Angeles
+2023-01-20,ORD1020,Headphones,Accessories,69.99,4,279.96,CUST519,41,Non-binary,PayPal,Chicago
+2023-01-21,ORD1021,Tablet,Mobile,219.99,3,659.97,CUST520,36,Female,Credit Card,New York
+2023-01-22,ORD1022,Laptop,Computers,849.99,1,849.99,CUST521,47,Male,Cash,Los Angeles
+2023-01-23,ORD1023,Smartwatch,Accessories,159.99,2,319.98,CUST522,35,Female,PayPal,Chicago
+2023-01-24,ORD1024,Smartphone,Mobile,299.99,1,299.99,CUST523,33,Male,Credit Card,New York
+2023-01-25,ORD1025,Headphones,Accessories,39.99,5,199.95,CUST524,29,Non-binary,Cash,Los Angeles
+2023-01-26,ORD1026,Tablet,Mobile,249.99,2,499.98,CUST525,27,Female,Credit Card,Chicago
+2023-01-27,ORD1027,Laptop,Computers,799.99,3,2399.97,CUST526,48,Male,PayPal,New York
+2023-01-28,ORD1028,Smartwatch,Accessories,139.99,1,139.99,CUST527,40,Female,Cash,Los Angeles
+2023-01-29,ORD1029,Smartphone,Mobile,349.99,2,699.98,CUST528,31,Male,Credit Card,Chicago
+2023-01-30,ORD1030,Headphones,Accessories,79.99,2,159.98,CUST529,34,Non-binary,PayPal,New York
+

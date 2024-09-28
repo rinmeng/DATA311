@@ -1,0 +1,108 @@
+---
+title: "Assignment 1"
+subtitle: "DATA311 - Machine Learning"
+author: "Rin Meng, 51940633"
+toc: true
+format:
+  html:
+    embed-resources: true
+    df-print: paged
+editor: visual
+---
+
+## **Exploratory / Pre-processing**
+
+### Exercise 1
+
+b\. Regression
+
+c\. Supervised
+
+### Exercise 2
+
+```{r}
+
+abalone <- read.csv(("abalone.data"))
+
+str(abalone)
+
+```
+
+### Exercise 3
+
+```{r}
+
+hist(abalone$X15, xlab = "Abalone age", ylab = "Abalone count", main = "Histogram of abalone count vs abalone age")
+```
+
+We see that this is an observation of a skewed normally distributed histogram. This should not break any assumptions of the linear model because in a linear model, we should have a data that follows:
+
+1.  **Linearity:** The relationship between the independent and dependent variables should be linear.
+
+2.  **Independence**: The residuals should be independent.
+
+3.  **Homoscedasticity**: The residuals should have constant variance at every level of the independent variable.
+
+4.  **Normality**: The residuals should be approximately normally distributed.
+
+### Exercise 4
+
+```{r}
+
+set.seed(51940633)
+
+# count half of the rows
+sampleSize <- floor(0.5 * nrow(abalone))
+
+# split rows into 2 sets
+set <- sample(seq_len(nrow(abalone)), size = sampleSize)
+
+abaloneTrain <- abalone[set, ]
+abaloneTest <- abalone[-set, ]
+
+abaloneTrain
+abaloneTest
+
+```
+
+## **Simple Linear Regression**
+
+### **Exercise 5**
+
+```{r}
+abaloneTrain.lm <- lm(X15 ~ X0.455,data=abaloneTrain)
+summary(abaloneTrain.lm)
+```
+
+Since the p value for the length coefficient is incredibly small at ($< 2 \times 10^-16$), we can safely say that there is a significant relationship between abalone's length and rings.
+
+### Exercise 6
+
+The coefficient of determination, $R^2$ , also known as the Multiple R-squared value, is at $0.2846$. This therefore, means that about $28.46%$ of the presented abalone's ring is explainable by the abalone's length.
+
+### Exercise 7
+
+```{r}
+plot(abaloneTrain$X0.455, abaloneTrain$X15, xlab="Abalone length (mm)", ylab="Abalone rings"
+     ,pch=16,cex=0.3, main = "Scatter plot of rings vs length")
+abline(abaloneTrain.lm, col = "red")
+
+```
+
+1.  **Linearity:** since the relationship between the independent variable (length), and the dependent variable (rings), appears to scatter in straight lines, making patterns, then linearity is generally considered as being satisfied.
+
+2.  **Homoscedasticity:**
+
+### Exercise 8
+
+```{r}
+qqnorm(residuals(abaloneTrain.lm), main="Q-Q Plot of Residuals", pch=16, cex=0.3)
+qqline(residuals(abaloneTrain.lm), col="red")
+hist(residuals(abaloneTrain.lm), breaks=30, main="Histogram of Residuals", xlab="Residuals", col="lightblue")
+```
+
+The normality of the residuals is not satisfied because the historgrams shows that it is heavily skewed, and the quantile-quantile plot shows that it does not fall within the quantile-quantile line.
+
+## **Multiple Linear Regression**
+
+### Exercise 10
