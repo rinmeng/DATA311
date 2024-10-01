@@ -64,7 +64,7 @@ abaloneTest
 ### Exercise 5
 
 ```{r}
-abaloneTrain.lm <- lm(Rings ~ Length,data=abaloneTrain)
+abaloneTrain.lm <- lm(Rings ~ Length, data=abaloneTrain)
 summary(abaloneTrain.lm)
 ```
 
@@ -114,7 +114,7 @@ plot(abaloneTrain.lm2, pch=16, cex=0.3)
 
 1.  **P-value:** The p-value of the polynomial term, `I(Length^2)` equates to $6.01 \times 10^{-7}$ which is much less than $0.05$ so it is still statistically significant.
 2.  **Adjusted R-squared: T**he adjusted R-squared value has increased from $0.2866$ in the linear model to $0.2947$ in the polynomial model, indicating a better fit with the inclusion of the quadratic term.
-3.  **Residual Standard Error**: The residual standard error has slightly decreased from $2.732$ in the linear model to \$\$ in the polynomial model, indicating a better fit.
+3.  **Residual Standard Error**: The residual standard error has slightly decreased from $2.677$ in the linear model to $0.2947$ in the polynomial model, indicating a better fit.
 4.  **Violations:**
     -   **Linearity violated:** the **Residuals vs Fitted** plot shows us a very pattern-heavy plot, making it non-linear, as we look for random scatters around the red-line.
     -   **Normality violated:** the **QQ Residuals** plot shows us that the residual points does not lie on the dashed-line, making it not normally distributed,
@@ -131,15 +131,15 @@ summary(abaloneTrain.lm3)
 
 By adding the `Sex` as a categorical predictor in the regression model, we can clearly that:
 
--   Sex = I is highly significant with a p-value of $2.07 \times 10^{-16}$.
+-   Sex = I is highly significant with a p-value of $2 \times 10^{-16}$.
 
 -   Sex = M is insignificant with a p-value of $0.348$.
 
--   **Model with only Length:** Adjusted R-squared = $0.2843$
+-   **Model with only Length:** Adjusted R-squared = $0.2866$
 
 -   **Model with Length + Sex:** Adjusted R-squared = $0.3152$
 
-The adjusted R-squared value increased from $0.2843$ to $0.3051$, indicating that adding `Sex` as a predictor improves the model fit by explaining more variance in the response variable.
+The adjusted R-squared value increased from $0.2866$ to $0.3152$, indicating that adding `Sex` as a predictor improves the model fit by explaining more variance in the response variable.
 
 Therefore, we can conclude that, adding the `Sex` as a categorical predictor variable significantly improves the model.
 
@@ -174,8 +174,6 @@ abaloneTrain.forward <- step(abaloneTrain.lm3, scope = list(lower = abaloneTrain
 summary(abaloneTrain.forward)
 
 ```
-
-For this forward selection model, I have selected `Whole_Weight` which is the `Whole_weight` variable where it measures the whole abalone's we
 
 ## **Multiple Linear Regression**
 
@@ -215,19 +213,19 @@ summary(abaloneTrain.lm4)
 
 Comparing the **R-squared** and **Adjusted R-squared** values for this model with **Exercise 5**, we see that in **Exercise 5**, we have a linear model of **Rings** as a response variable and **Length** as the predictor variable:
 
--   **Multiple R-squared**: $0.2846$
+-   **Multiple R-squared**: $0.2869$
 
--   **Adjusted R-squared**: $0.2843$
+-   **Adjusted R-squared**: $0.2866$
 
 Here, when we have a linear model of **Rings** as a response variable and **Length** and **Whole Weight** as the predictor variable:
 
--   **Multiple R-squared**: $0.2888$
+-   **Multiple R-squared**: $0.2907$
 
--   **Adjusted R-squared**: $0.2882$
+-   **Adjusted R-squared**: $0.2901$
 
-What do these values tell us: The **Multiple R-squared** value increased from $0.2846$ to $0.2888$. This indicates that the addition of **Whole Weight** as a predictor has just slightly improved the model. The **Adjusted R-squared** value also increased from $0.2843$ to $0.2882$. This suggests that the improvement in the model’s performance is not just due to the addition of a new predictor, but that **Whole Weight** actually contributes meaningful information to the model.
+What do these values tell us: The **Multiple R-squared** value increased from $0.2869$ to $0.2907$. This indicates that the addition of **Whole Weight** as a predictor has just slightly improved the model. The **Adjusted R-squared** value also increased from $0.2866$ to $0.2901$. This suggests that the improvement in the model’s performance just because we added new predictors, but the **Whole Weight** variable actually contributes information to our model.
 
-Why the difference: **Multiple R-squared** will always be increased when there are new predictor variable introduced even if the new predictors doesn't improve the model significantly, and that is why **Adjusted R-squared** will provide a more accurate measure of model performance by penalizing the contribution of unnecessary predictors.
+Why the difference: **Multiple R-squared** will always be increased when there are new predictor variable introduced even if the new predictors doesn't improve the model, and that is why **Adjusted R-squared** will provide a more accurate measurement of the model performance by taking away the contribution of unnecessary predictors.
 
 ### Exercise 18
 
@@ -236,7 +234,7 @@ interactionModel <- lm(Rings ~ Length * Whole_Weight, data = abaloneTrain)
 summary(interactionModel)
 ```
 
-The **interaction term** `X0.445:Whole_Weight` has a very low p-value at $2 \times 10^{-16}$, making it statistically significant. The negative coefficient of the interaction term suggests that, as the variable **Whole Weight** increases, the effect of **Length** on the number of **Rings** decreases.
+The **interaction term** `Length:Whole_Weight` has a very low p-value at $2 \times 10^{-16}$, making it statistically significant. The negative coefficient of the interaction term suggests that, as the variable **Whole Weight** increases, the effect of **Length** on the number of **Rings** decreases.
 
 ### Exercise 19
 
@@ -247,59 +245,58 @@ summary(multipleRegression)
 
 The predictors that are statistically significant (p-value $< 0.05$) are:
 
-1.  **MI (Sex = Infant)**: p-value $= 3.96 \times 10^{-06}$
+1.  **Sex = I**: p-value $= 8.67 \times 10^{-12}$
 
-2.  **Diameter (Diameter)**: p-value $= 0.00777$
+2.  **Diameter**: p-value $= 0.0145$
 
-3.  **Height (Height)**: p-value $= 4.71 \times 10^{-06}$
+3.  **Height**: p-value $= 1.04 \times 10^{-05}$
 
-4.  **Whole_Weight (Whole Weight)**: p-value = $2.77 \times 10^{-16}$
+4.  **Whole_Weight**: p-value = $2 \times 10^{-16}$
 
-5.  **Shucked_Weight (Shucked Weight)**: p-value $< 2 \times 10^{-16}$
+5.  **Shucked_Weight**: p-value $< 2 \times 10^{-16}$
 
-6.  **Viscera_Weight (Viscera Weight)**: p-value $= 1.72 \times 10^{-08}$
+6.  **Viscera_Weight**: p-value $= 7.62 \times 10^{-10}$
 
-7.  **Shell_Weight (Shell Weight)**: p-value $= 2.75 \times 10^{-09}$
+7.  **Shell_Weight**: p-value $= 1.85 \times 10^{-07}$
 
 ### Exercise 20
 
 I would have chose:
 
-1.  **MM (Sex = Male)**: The p-value is 0.31769 which is not statistically significant, therefore it is unlikely to have impact on the model's performance.
+1.  **Sex = Male**: The p-value is 0.9309 which is not statistically significant, therefore it is unlikely to have impact on the model's performance.
 
-2.  **Length Length**: The p-value is 0.61741, which is also not statistically significant, and also, it is highly correlated with the **Diameter**.
+2.  **Length**: The p-value is 0.2859, which is also not statistically significant, and also, it is highly correlated with the **Diameter**.
 
 I would expect the model's prediction to be better, where the **Adjusted R-squared** value is much higher of any of the observed model that we have created throughout this exercise.
 
 ### Exercise 21
 
 ```{r}
-myModel <- lm(Rings ~ Sex + Diameter + Height + Whole_Weight + Shucked_Weight + Viscera_Weight + Shell_Weight, data = abaloneTrain)
-summary(myModel)
+myModel <- lm(Rings ~ Sex * Diameter * Height * Whole_Weight * 
+            Shucked_Weight * Viscera_Weight * Shell_Weight, data = abaloneTrain)
+summary(myModel)$adj.r.squared
 
-par(mfrow = c(2, 2))
-plot(myModel, pch = 16, cex=0.3)
 
 ```
 
-I chose this model because I excluded the variables that were not statistically significant, such as the variable **Length Length.**\
+I chose this model because I excluded the variable that were not statistically significant, such as the variable **Length** and **Sex = M**.
 
-This model performed a little bit better than the all of the other models because the **Adjusted R-squared** is up by $0.0002$
+This model performed a little bit better than the all of the other models because the **Adjusted R-squared** is up.
 
 ## Model Comparison
 
 ### Exercise 22
 
-| Exercise | Adjusted $R^2$                                             | $RSE_{test}$                                       | $MSE_{test}$                                                                                      |
-|-----------------|-----------------|-----------------|----------------------|
-| 5        | `r summary(abaloneTrain.lm)$adj.r.squared`                 | `r summary(abaloneTrain.lm)$sigma`                 | `r mean((abaloneTest$Rings - (predict(abaloneTrain.lm, newdata = abaloneTest)))^2)`               |
-| 10       | `r summary(abaloneTrain.lm2)$adj.r.squared`                | `r summary(abaloneTrain.lm2)$sigma`                | `r mean((predict(abaloneTrain.lm2, newdata = abaloneTest) - abaloneTest$Rings)^2)`                |
-| 11       | `r summary(abaloneTrain.lm3)$adj.r.squared`                | `r summary(abaloneTrain.lm3)$sigma`                | `r mean((predict(abaloneTrain.lm3, newdata = abaloneTest) - abaloneTest$Rings)^2)`                |
-| 15       | `r summary(abaloneTrain.lm3withWholeWeight)$adj.r.squared` | `r summary(abaloneTrain.lm3withWholeWeight)$sigma` | `r mean((predict(abaloneTrain.lm3withWholeWeight, newdata = abaloneTest) - abaloneTest$Rings)^2)` |
-| 17       | `r summary(abaloneTrain.lm4)$adj.r.squared`                | `r summary(abaloneTrain.lm4)$sigma`                | `r mean((predict(abaloneTrain.lm4, newdata = abaloneTest) - abaloneTest$Rings)^2)`                |
-| 18       | `r summary(interactionModel)$adj.r.squared`                | `r summary(interactionModel)$sigma`                | `r mean((predict(interactionModel, newdata = abaloneTest) - abaloneTest$Rings)^2)`                |
-| 19       | `r summary(multipleRegression)$adj.r.squared`              | `r summary(multipleRegression)$sigma`              | `r mean((predict(multipleRegression, newdata = abaloneTest) - abaloneTest$Rings)^2)`              |
-| 21       | `r summary(myModel)$adj.r.squared`                         | `r summary(myModel)$sigma`                         | `r mean((predict(myModel, newdata = abaloneTest) - abaloneTest$Rings)^2)`                         |
+| Exercise | Adjusted $R^2$                                             | $RSE_{train}$                                      | $MSE_{test}$                                                                                      |
+|------------------|------------------|------------------|-------------------|
+| 5        | `r summary(abaloneTrain.lm)$adj.r.squared`                 | `r summary(abaloneTrain.lm)$sigma`                 | `r mean((abaloneTest$Rings - predict(abaloneTrain.lm, newdata = abaloneTest))^2)`                 |
+| 10       | `r summary(abaloneTrain.lm2)$adj.r.squared`                | `r summary(abaloneTrain.lm2)$sigma`                | `r mean((abaloneTest$Rings - predict(abaloneTrain.lm2, newdata = abaloneTest))^2)`                |
+| 11       | `r summary(abaloneTrain.lm3)$adj.r.squared`                | `r summary(abaloneTrain.lm3)$sigma`                | `r mean((abaloneTest$Rings - predict(abaloneTrain.lm3, newdata = abaloneTest))^2)`                |
+| 15       | `r summary(abaloneTrain.lm3withWholeWeight)$adj.r.squared` | `r summary(abaloneTrain.lm3withWholeWeight)$sigma` | `r mean((abaloneTest$Rings - predict(abaloneTrain.lm3withWholeWeight, newdata = abaloneTest))^2)` |
+| 17       | `r summary(abaloneTrain.lm4)$adj.r.squared`                | `r summary(abaloneTrain.lm4)$sigma`                | `r mean((abaloneTest$Rings - predict(abaloneTrain.lm4, newdata = abaloneTest))^2)`                |
+| 18       | `r summary(interactionModel)$adj.r.squared`                | `r summary(interactionModel)$sigma`                | `r mean((abaloneTest$Rings - predict(interactionModel, newdata = abaloneTest))^2)`                |
+| 19       | `r summary(multipleRegression)$adj.r.squared`              | `r summary(multipleRegression)$sigma`              | `r mean((abaloneTest$Rings - predict(multipleRegression, newdata = abaloneTest))^2)`              |
+| 21       | `r summary(myModel)$adj.r.squared`                         | `r summary(myModel)$sigma`                         | `r mean((abaloneTest$Rings - predict(myModel, newdata = abaloneTest))^2)`                         |
 
 ### Exercise 23
 
