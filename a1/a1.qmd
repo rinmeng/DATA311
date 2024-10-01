@@ -22,9 +22,8 @@ c\. Supervised
 
 ```{r}
 
-abalone <- read.csv(("abalone.data"))
-abalone$M <- as.factor(abalone$M)
-abalone$M <- relevel(abalone$M, ref = "F")
+abalone <- read.table(("abalone.data"), header = FALSE, sep = ",")
+colnames(abalone) <- c("Sex", "Length", "Diameter", "Height", "Whole_Weight", "Shucked_Weight", "Viscera_Weight", "Shell_Weight", "Rings")
 
 str(abalone)
 
@@ -34,18 +33,10 @@ str(abalone)
 
 ```{r}
 
-hist(abalone$X15, xlab = "Abalone age",breaks=30 , ylab = "Abalone count", main = "Histogram of abalone count vs abalone age")
+hist(abalone$Rings, xlab = "Abalone age",breaks=30 , ylab = "Abalone count", main = "Histogram of abalone count vs abalone age")
 ```
 
-We see that this is an observation of a skewed normally distributed histogram. This should not break any assumptions of the linear model because in a linear model, we should have a data that follows:
-
-1.  **Linearity:** The relationship between the independent and dependent variables should be linear.
-
-2.  **Independence**: The residuals should be independent.
-
-3.  **Homoscedasticity**: The residuals should have constant variance at every level of the independent variable.
-
-4.  **Normality**: The residuals should be approximately normally distributed.
+We see that this is an observation of a skewed normally distributed histogram. This should not break any assumptions of the linear model because in a linear model, we should have a data that follows **Linearity, Independence, Homoscedasticity, Normality** and from this observation alone, we do not have enough factors to point out if it breaks any of the assumptions, there may be a few outliers that made the graph be skewed.
 
 ### Exercise 4
 
@@ -70,10 +61,10 @@ abaloneTest
 
 ## Simple Linear Regression
 
-### **Exercise 5**
+### Exercise 5
 
 ```{r}
-abaloneTrain.lm <- lm(X15 ~ X0.455,data=abaloneTrain)
+abaloneTrain.lm <- lm(Rings ~ Length,data=abaloneTrain)
 summary(abaloneTrain.lm)
 ```
 
@@ -81,29 +72,24 @@ Since the p value for the **length** coefficient is incredibly small at $2 \time
 
 ### Exercise 6
 
-The **coefficient of determination**, $R^2$ , also known as the **Multiple R-squared** value, is at $0.2846$. This therefore, means that about $28.46%$ of the presented abalone's **ring** is explainable by the abalone's **length**.
+The **coefficient of determination**, $R^2$ , also known as the **Multiple R-squared** value, is at $0.2866$. This therefore, means that about $28.66%$ of the presented abalone's **ring** is explainable by the abalone's **length**.
 
 ### Exercise 7
 
 ```{r}
-plot(abaloneTrain$X0.455, abaloneTrain$X15, xlab="Abalone length (mm)", ylab="Abalone rings",
+plot(abaloneTrain$Length, abaloneTrain$Rings, xlab="Abalone length (mm)", ylab="Abalone rings",
      pch=16,cex=0.3, main = "Scatter plot of rings vs length")
 abline(abaloneTrain.lm, col = "red")
 
 ```
 
-1.  **Linearity:** since the relationship between the independent variable (length), and the dependent variable (rings), appears to scatter in straight lines, making patterns, then linearity is generally considered as being satisfied.
-
-2.  **Homoscedasticity:**
-
 ### Exercise 8
 
-```{r}
-plot(abaloneTrain.lm, which = 2, pch=16, cex=0.3)
-plot(abaloneTrain.lm, which = 3, pch=16, cex=0.3)
-```
+The **scatter plot** of **Rings vs Length** indicates that there is an underlying pattern, therefore it implies that this model violated:
 
-**QQ Residual** plot indicates that the residuals are not normally distributed and the **scale-location** has a pattern, and does not have a constant variance between each residuals, and it does not appear that they are scattered randomly along the red line, indicating that the homoscedasticity of this linear model is violated. Therefore, this model is **biased**.
+1.  **Homoscedasticity:** There is no visible constant variance between each dots, therefore, this model is heteroscedasticity.
+
+2.  **Linearity:** Since there is a pattern, therefore, linearity is also violated.
 
 ### Exercise 9
 
@@ -118,7 +104,7 @@ plot(abaloneTrain.lm, which = 1, pch=16, cex=0.3)
 ### Exercise 10
 
 ```{r}
-abaloneTrain.lm2 <- lm(X15 ~ X0.455 + I(X0.455^2), data=abaloneTrain)
+abaloneTrain.lm2 <- lm(Rings ~ Length + I(Length^2), data=abaloneTrain)
 summary(abaloneTrain.lm2)
 
 
@@ -126,9 +112,9 @@ plot(abaloneTrain.lm2, pch=16, cex=0.3)
 
 ```
 
-1.  **P-value:** The p-value of the polynomial term, `I(X0.455^2)` equates to $1.78 \times 10^{-7}$ which is much less than $0.05$ so it is still statistically significant.
-2.  **Adjusted R-squared: T**he adjusted R-squared value has increased from $0.2843$ in the linear model to $0.2932$ in the polynomial model, indicating a better fit with the inclusion of the quadratic term.
-3.  **Residual Standard Error**: The residual standard error has slightly decreased from 2.732 in the linear model to 2.715 in the polynomial model, indicating a better fit.
+1.  **P-value:** The p-value of the polynomial term, `I(Length^2)` equates to $6.01 \times 10^{-7}$ which is much less than $0.05$ so it is still statistically significant.
+2.  **Adjusted R-squared: T**he adjusted R-squared value has increased from $0.2866$ in the linear model to $0.2947$ in the polynomial model, indicating a better fit with the inclusion of the quadratic term.
+3.  **Residual Standard Error**: The residual standard error has slightly decreased from $2.732$ in the linear model to \$\$ in the polynomial model, indicating a better fit.
 4.  **Violations:**
     -   **Linearity violated:** the **Residuals vs Fitted** plot shows us a very pattern-heavy plot, making it non-linear, as we look for random scatters around the red-line.
     -   **Normality violated:** the **QQ Residuals** plot shows us that the residual points does not lie on the dashed-line, making it not normally distributed,
@@ -138,22 +124,20 @@ plot(abaloneTrain.lm2, pch=16, cex=0.3)
 ### Exercise 11
 
 ```{r}
-abaloneTrain.lm3 <- lm(X15 ~ X0.455 + M, data=abaloneTrain)
+abaloneTrain.lm3 <- lm(Rings ~ Length + Sex, data=abaloneTrain)
 summary(abaloneTrain.lm3)
 
 ```
 
 By adding the `Sex` as a categorical predictor in the regression model, we can clearly that:
 
--   **`MI`** (Sex = I) is highly significant with a p-value of $2.07 \times 10^{-14}$.
+-   Sex = I is highly significant with a p-value of $2.07 \times 10^{-16}$.
 
--   **`MM`** (Sex = M) is marginally significant with a p-value of $0.0739$.
+-   Sex = M is insignificant with a p-value of $0.348$.
 
-<!-- -->
+-   **Model with only Length:** Adjusted R-squared = $0.2843$
 
--   **Model with only Length (X0.455):** Adjusted R-squared = $0.2843$
-
--   **Model with Length + Sex (X0.455 + M):** Adjusted R-squared = $0.3051$
+-   **Model with Length + Sex:** Adjusted R-squared = $0.3152$
 
 The adjusted R-squared value increased from $0.2843$ to $0.3051$, indicating that adding `Sex` as a predictor improves the model fit by explaining more variance in the response variable.
 
@@ -165,15 +149,15 @@ Therefore, we can conclude that, adding the `Sex` as a categorical predictor var
 \begin{equation}
 Rings = 
 \begin{cases} 
-  \hat{Y} = 4.2695 + 11.8890 \cdot X0.455 & \text{if Female} \\
-  \hat{Y} = 4.2695 + 11.8890 \cdot X0.455 - 0.2582 & \text{if Male} \\
-  \hat{Y} = 4.2695 + 11.8890 \cdot X0.455 - 1.3311 & \text{if Infant}
+  \hat{Y} = 4.4106 + 11.5287 \cdot Length & \text{if Female} \\
+  \hat{Y} = 4.4106 + 11.5287 \cdot Length - 0.1314 & \text{if Male} \\
+  \hat{Y} = 4.4106 + 11.5287 \cdot Length - 1.4391 & \text{if Infant}
 \end{cases}
 \end{equation}
 ```
 ### Exercise 13
 
-The reference level for the model fitted in Exercise 11 is **Female** because the coefficients for both, `M = "M"` and `M = "I"` are provided, therefore, their values are interpreted with relative to the reference category, `M = "F"`.
+The reference level for the model fitted in Exercise 11 is **Female** because the coefficients for both, `Sex = "M"` and `Sex = "I"` are provided, therefore, their values are interpreted with relative to the reference category, `Sex = "F"`.
 
 ### Exercise 14
 
@@ -183,7 +167,7 @@ Based on this data, and the predicted $\hat{Y}$ shown above, it seems to be that
 
 ```{r}
 
-abaloneTrain.lm3withWholeWeight <- lm(X15 ~ X0.455 + M + X0.514, data=abaloneTrain)
+abaloneTrain.lm3withWholeWeight <- lm(Rings ~ Length + Sex + Whole_Weight, data=abaloneTrain)
 
 abaloneTrain.forward <- step(abaloneTrain.lm3, scope = list(lower = abaloneTrain.lm3, upper = abaloneTrain.lm3withWholeWeight), direction = "forward")
 
@@ -191,7 +175,7 @@ summary(abaloneTrain.forward)
 
 ```
 
-For this forward selection model, I have selected `X0.514` which is the `Whole_weight` variable where it measures the whole abalone's we
+For this forward selection model, I have selected `Whole_Weight` which is the `Whole_weight` variable where it measures the whole abalone's we
 
 ## **Multiple Linear Regression**
 
@@ -212,7 +196,7 @@ maxCor
 maxCorIndex
 ```
 
-Ignoring correlation between the predictor and itself, the highest correlation we have is the two variables, `X0.365` and `X0.455` which is the variable **Length** and **Diameter**, both being highly correlated to each other out of the other pairs.
+Ignoring correlation between the predictor and itself, the highest correlation we have is the two variables, `Diameter` and `Length` which is the variable **Length** and **Diameter**, both being highly correlated to each other out of the other pairs.
 
 Implications of this **multicollinearity** is:
 
@@ -225,7 +209,7 @@ Implications of this **multicollinearity** is:
 ### Exercise 17
 
 ```{r}
-abaloneTrain.lm4 <- lm(X15 ~ X0.455 + X0.514, data=abaloneTrain)
+abaloneTrain.lm4 <- lm(Rings ~ Length + Whole_Weight, data=abaloneTrain)
 summary(abaloneTrain.lm4)
 ```
 
@@ -248,16 +232,16 @@ Why the difference: **Multiple R-squared** will always be increased when there a
 ### Exercise 18
 
 ```{r}
-interactionModel <- lm(X15 ~ X0.455 * X0.514, data = abaloneTrain)
+interactionModel <- lm(Rings ~ Length * Whole_Weight, data = abaloneTrain)
 summary(interactionModel)
 ```
 
-The **interaction term** `X0.445:X0.514` has a very low p-value at $2 \times 10^{-16}$, making it statistically significant. The negative coefficient of the interaction term suggests that, as the variable **Whole Weight** increases, the effect of **Length** on the number of **Rings** decreases.
+The **interaction term** `X0.445:Whole_Weight` has a very low p-value at $2 \times 10^{-16}$, making it statistically significant. The negative coefficient of the interaction term suggests that, as the variable **Whole Weight** increases, the effect of **Length** on the number of **Rings** decreases.
 
 ### Exercise 19
 
 ```{r}
-multipleRegression <- lm (X15 ~ ., data = abaloneTrain)
+multipleRegression <- lm (Rings ~ ., data = abaloneTrain)
 summary(multipleRegression)
 ```
 
@@ -265,17 +249,17 @@ The predictors that are statistically significant (p-value $< 0.05$) are:
 
 1.  **MI (Sex = Infant)**: p-value $= 3.96 \times 10^{-06}$
 
-2.  **X0.365 (Diameter)**: p-value $= 0.00777$
+2.  **Diameter (Diameter)**: p-value $= 0.00777$
 
-3.  **X0.095 (Height)**: p-value $= 4.71 \times 10^{-06}$
+3.  **Height (Height)**: p-value $= 4.71 \times 10^{-06}$
 
-4.  **X0.514 (Whole Weight)**: p-value = $2.77 \times 10^{-16}$
+4.  **Whole_Weight (Whole Weight)**: p-value = $2.77 \times 10^{-16}$
 
-5.  **X0.2245 (Shucked Weight)**: p-value $< 2 \times 10^{-16}$
+5.  **Shucked_Weight (Shucked Weight)**: p-value $< 2 \times 10^{-16}$
 
-6.  **X0.101 (Viscera Weight)**: p-value $= 1.72 \times 10^{-08}$
+6.  **Viscera_Weight (Viscera Weight)**: p-value $= 1.72 \times 10^{-08}$
 
-7.  **X0.15 (Shell Weight)**: p-value $= 2.75 \times 10^{-09}$
+7.  **Shell_Weight (Shell Weight)**: p-value $= 2.75 \times 10^{-09}$
 
 ### Exercise 20
 
@@ -283,40 +267,39 @@ I would have chose:
 
 1.  **MM (Sex = Male)**: The p-value is 0.31769 which is not statistically significant, therefore it is unlikely to have impact on the model's performance.
 
-2.  **X0.455 Length**: The p-value is 0.61741, which is also not statistically significant, and also, it is highly correlated with the **Diameter**.
+2.  **Length Length**: The p-value is 0.61741, which is also not statistically significant, and also, it is highly correlated with the **Diameter**.
 
 I would expect the model's prediction to be better, where the **Adjusted R-squared** value is much higher of any of the observed model that we have created throughout this exercise.
 
 ### Exercise 21
 
 ```{r}
-myModel <- lm(X15 ~ M + X0.365 + X0.095 + X0.514 + X0.2245 + X0.101 + X0.15, data = abaloneTrain)
+myModel <- lm(Rings ~ Sex + Diameter + Height + Whole_Weight + Shucked_Weight + Viscera_Weight + Shell_Weight, data = abaloneTrain)
 summary(myModel)
 
+par(mfrow = c(2, 2))
 plot(myModel, pch = 16, cex=0.3)
 
 ```
 
-I chose this model because I excluded the variables that were not statistically significant, such as the variables **M = "M" (Sex = Male)** and **X0.455 Length.**\
+I chose this model because I excluded the variables that were not statistically significant, such as the variable **Length Length.**\
 
-This model performed a little bit better than the all of the other models because the **Adjusted R-squared** is also up by $0.0002$
+This model performed a little bit better than the all of the other models because the **Adjusted R-squared** is up by $0.0002$
 
 ## Model Comparison
 
 ### Exercise 22
 
-| Exercise | Adjusted $R^2$ | $RSE$                                              | $MSE_{test}$                                                                                    |
-|----------------|----------------|-----------------|----------------------|
-| 5        | 0.2843         | `r summary(abaloneTrain.lm)$sigma`                 | `r mean((predict(abaloneTrain.lm, newdata = abaloneTest) - abaloneTest$X15)^2)`                 |
-| 10       | 0.2932         | `r summary(abaloneTrain.lm2)$sigma`                | `r mean((predict(abaloneTrain.lm2, newdata = abaloneTest) - abaloneTest$X15)^2)`                |
-| 11       | 0.3051         | `r summary(abaloneTrain.lm3)$sigma`                | `r mean((predict(abaloneTrain.lm3, newdata = abaloneTest) - abaloneTest$X15)^2)`                |
-| 12       |                |                                                    |                                                                                                 |
-| 11       |                |                                                    |                                                                                                 |
-| 15       | 0.3069         | `r summary(abaloneTrain.lm3withWholeWeight)$sigma` | `r mean((predict(abaloneTrain.lm3withWholeWeight, newdata = abaloneTest) - abaloneTest$X15)^2)` |
-| 17       | 0.2882         | `r summary(abaloneTrain.lm4)$sigma`                | `r mean((predict(abaloneTrain.lm4, newdata = abaloneTest) - abaloneTest$X15)^2)`                |
-| 18       | 0.3286         | `r summary(interactionModel)$sigma`                | `r mean((predict(interactionModel, newdata = abaloneTest) - abaloneTest$X15)^2)`                |
-| 19       | 0.5058         | `r summary(multipleRegression)$sigma`              | `r mean((predict(multipleRegression, newdata = abaloneTest) - abaloneTest$X15)^2)`              |
-| 21       | 0.506          | `r summary(myModel)$sigma`                         | `r mean((predict(myModel, newdata = abaloneTest) - abaloneTest$X15)^2)`                         |
+| Exercise | Adjusted $R^2$                                             | $RSE_{test}$                                       | $MSE_{test}$                                                                                      |
+|-----------------|-----------------|-----------------|----------------------|
+| 5        | `r summary(abaloneTrain.lm)$adj.r.squared`                 | `r summary(abaloneTrain.lm)$sigma`                 | `r mean((abaloneTest$Rings - (predict(abaloneTrain.lm, newdata = abaloneTest)))^2)`               |
+| 10       | `r summary(abaloneTrain.lm2)$adj.r.squared`                | `r summary(abaloneTrain.lm2)$sigma`                | `r mean((predict(abaloneTrain.lm2, newdata = abaloneTest) - abaloneTest$Rings)^2)`                |
+| 11       | `r summary(abaloneTrain.lm3)$adj.r.squared`                | `r summary(abaloneTrain.lm3)$sigma`                | `r mean((predict(abaloneTrain.lm3, newdata = abaloneTest) - abaloneTest$Rings)^2)`                |
+| 15       | `r summary(abaloneTrain.lm3withWholeWeight)$adj.r.squared` | `r summary(abaloneTrain.lm3withWholeWeight)$sigma` | `r mean((predict(abaloneTrain.lm3withWholeWeight, newdata = abaloneTest) - abaloneTest$Rings)^2)` |
+| 17       | `r summary(abaloneTrain.lm4)$adj.r.squared`                | `r summary(abaloneTrain.lm4)$sigma`                | `r mean((predict(abaloneTrain.lm4, newdata = abaloneTest) - abaloneTest$Rings)^2)`                |
+| 18       | `r summary(interactionModel)$adj.r.squared`                | `r summary(interactionModel)$sigma`                | `r mean((predict(interactionModel, newdata = abaloneTest) - abaloneTest$Rings)^2)`                |
+| 19       | `r summary(multipleRegression)$adj.r.squared`              | `r summary(multipleRegression)$sigma`              | `r mean((predict(multipleRegression, newdata = abaloneTest) - abaloneTest$Rings)^2)`              |
+| 21       | `r summary(myModel)$adj.r.squared`                         | `r summary(myModel)$sigma`                         | `r mean((predict(myModel, newdata = abaloneTest) - abaloneTest$Rings)^2)`                         |
 
 ### Exercise 23
 
@@ -324,9 +307,9 @@ For the best model to be picked, we have to follow these criteria:
 
 1.  **Adjusted** $R^2$ **:** Higher values indicate a better fit.
 
-2.  **RSE:** Lower values indicate a better fit.
+2.  **RSE test:** Lower values indicate a better fit.
 
-3.  **MSE:** Lower values indicate a better fit.
+3.  **MSE test:** Lower values indicate a better fit.
 
 Therefore, our best models listed from above should be the one from **Exercise 19** and **Exercise 21** where all of the criteria are very similar and is the closest we can get to our criteria out of all of the other models.
 
@@ -338,9 +321,9 @@ library(caret)
 knn_mse_test = NULL
 
 for (k in c(10, 50, 100, 200, 300)){
-  kmod <- knnreg(X15 ~ X0.455, data = abaloneTrain, k = k)
+  kmod <- knnreg(Rings ~ Length, data = abaloneTrain, k = k)
   yhat = predict(kmod, abaloneTest)
-  knn_mse_test[k] = mean((abaloneTest$X0.455 - yhat)^2)
+  knn_mse_test[k] = mean((abaloneTest$Length - yhat)^2)
 }
 
 plot(knn_mse_test, type = "b", ylab = "MSE test", xlab = "k", main = "KNN regression")
