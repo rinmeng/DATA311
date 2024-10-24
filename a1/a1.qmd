@@ -288,7 +288,7 @@ This model performed a little bit better than the all of the other models becaus
 ### Exercise 22
 
 | Exercise | Adjusted $R^2$                                             | $RSE_{train}$                                      | $MSE_{test}$                                                                                      |
-|------------------|------------------|------------------|-------------------|
+|----------|------------------------------------------------------------|----------------------------------------------------|---------------------------------------------------------------------------------------------------|
 | 5        | `r summary(abaloneTrain.lm)$adj.r.squared`                 | `r summary(abaloneTrain.lm)$sigma`                 | `r mean((abaloneTest$Rings - predict(abaloneTrain.lm, newdata = abaloneTest))^2)`                 |
 | 10       | `r summary(abaloneTrain.lm2)$adj.r.squared`                | `r summary(abaloneTrain.lm2)$sigma`                | `r mean((abaloneTest$Rings - predict(abaloneTrain.lm2, newdata = abaloneTest))^2)`                |
 | 11       | `r summary(abaloneTrain.lm3)$adj.r.squared`                | `r summary(abaloneTrain.lm3)$sigma`                | `r mean((abaloneTest$Rings - predict(abaloneTrain.lm3, newdata = abaloneTest))^2)`                |
