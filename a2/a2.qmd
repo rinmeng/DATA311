@@ -1,0 +1,220 @@
+---
+title: "Assignment 2"
+subtitle: "DATA311 - Machine Learning"
+author: "Rin Meng, 51940633"
+toc: true
+format:
+  html:
+    embed-resources: true
+    df-print: paged
+editor: visual
+---
+
+# Exploratory / Pre-Processing
+
+### Exercise 1
+
+a\. Classification\
+d. Unsupervised
+
+### Exercise 2 (Data Preparing and Summary)
+
+```{r}
+telco <- read.table(("telcochurn.csv"), header=TRUE, sep = ",")
+telco <- na.omit(telco)
+# Make sure its factored into levels Yes and No
+telco$Churn <- as.factor(telco$Churn)
+telco$tenure <- as.numeric(telco$tenure)
+telco$gender <- as.factor(telco$gender)
+telco$SeniorCitizen <- as.factor(telco$SeniorCitizen)
+telco$Partner <- as.factor(telco$Partner)
+telco$Dependents <- as.factor(telco$Dependents)
+telco$PhoneService <- as.factor(telco$PhoneService)
+telco$MultipleLines <- as.factor(telco$MultipleLines)
+telco$InternetService <- as.factor(telco$InternetService)
+telco$OnlineSecurity <- as.factor(telco$OnlineSecurity)
+telco$OnlineBackup <- as.factor(telco$OnlineBackup)
+telco$DeviceProtection <- as.factor(telco$DeviceProtection)
+telco$TechSupport <- as.factor(telco$TechSupport)
+telco$StreamingTV <- as.factor(telco$StreamingTV)
+telco$StreamingMovies <- as.factor(telco$StreamingMovies)
+telco$Contract <- as.factor(telco$Contract)
+telco$PaperlessBilling <- as.factor(telco$PaperlessBilling)
+telco$PaymentMethod <- as.factor(telco$PaymentMethod)
+telco$MonthlyCharges <- as.numeric(telco$MonthlyCharges)
+telco$TotalCharges <- as.numeric(telco$TotalCharges)
+str(telco)
+```
+
+### Exercise 3 (Distribution of Churn Rates)
+
+```{r}
+library(ggplot2)
+
+ggplot(telco, aes(x = Churn)) +
+  geom_bar(fill = c("steelblue", "tomato")) +
+  labs(title = "Customer Churn Frequency",
+       x = "Churn Status",
+       y = "Frequency") +
+  theme_minimal()
+
+```
+
+Imbalanced class: The No's are marginally larger than the Yes's. This ultimately implies that our prediction can be biased and favors the majority side because the model may not learn enough on the minority side.
+
+### Exercise 4 (Data Visualization for Categorical Variables)
+
+```{r}
+churnPlot <- function(predictor) {
+  ggplot(telco, aes_string(x = predictor, fill = "Churn")) +  # Use aes_string for dynamic x aesthetic
+    geom_bar(position = "fill") +
+    labs(title = paste("Churn Rate by", predictor), x = predictor, y = "Proportion") +  # Make title dynamic
+    theme_minimal()
+}
+
+# Identify categorical predictors
+predictors <- colnames(telco)
+exclude_columns <- c("customerID","Churn", "MonthlyCharges", "TotalCharges","tenure")
+predictors <- predictors[!predictors %in% exclude_columns]
+
+
+for (predictor in predictors) {
+  print(churnPlot(predictor))
+}
+
+
+```
+
+Based on these plots, we can see that the categorical predictor that seems to be associated churn would be; SeniorCitizen, Partner, Dependents, InternetService, OnlineSecurity, OnlineBackup, DeviceProtection, TechSupport, Contract, PaperlessBilling, PaymentMethod, MonthlyCharges, TotalCharges.
+
+### Exercise 5 (Data Visualization for Continuous Variables)
+
+```{r}
+
+# Create binned tenure categories 
+telco$tenure_bins <- cut(telco$tenure, 
+                         breaks = c(0, 12, 24, 36, 48, 60, Inf), 
+                         labels = c("0-12", "13-24", "25-36", "37-48", "49-60", "60+"),
+                         right = FALSE,   # Include the lower bound, exclude the upper
+                         include.lowest = TRUE)  # Include the lowest value
+ggplot(telco, aes(x = tenure_bins, fill = Churn)) +
+    geom_bar(position = "fill") +
+    labs(title = "Churn Rate by tenure Bins", x = "Tenure (Months)", y = "Proportion") +
+    theme_minimal()
+
+
+telco$MonthlyCharges_bins <- cut(telco$MonthlyCharges, 
+                         breaks = c(0, 20, 40, 60, 80, 100, Inf), 
+                         labels = c("0-20", "21-40", "41-60", "61-80", "81-100", "100+"),
+                         right = FALSE,   # Include the lower bound, exclude the upper
+                         include.lowest = TRUE)  # Include the lowest value
+ggplot(telco, aes(x = MonthlyCharges_bins, fill = Churn)) +
+    geom_bar(position = "fill") +
+    labs(title = "Churn Rate by MonthlyCharges Bins", x = "MonthlyCharges ($)", y = "Proportion") +
+    theme_minimal()
+
+telco$TotalCharges_bins <- cut(telco$TotalCharges, 
+                         breaks = c(0, 800, 1600, 2400, 3200, 4000, 4800, Inf), 
+                         labels = c("0-800", "801-1600", "1601-2400", "2401-3200", "3201-4000", "4001-4800", "4800+"),
+                         right = FALSE,   # Include the lower bound, exclude the upper
+                         include.lowest = TRUE)  # Include the lowest value
+ggplot(telco, aes(x = TotalCharges_bins, fill = Churn)) +
+    geom_bar(position = "fill") +
+    labs(title = "Churn Rate by TotalCharges Bins", x = "TotalCharges ($)", y = "Proportion") +
+    theme_minimal()
+
+```
+
+Based on these plots, the continuous variable that seems to be associated with the customer churn would be; tenure, MontlyCharges, and TotalCharges.
+
+### Exercise 6 (Data Splitting)
+
+```{r}
+# First split: 70% training and 30% test
+sampleSize <- floor(0.7 * nrow(telco))
+set <- sample(seq_len(nrow(telco)), size = sampleSize)
+
+telcoTrain_Pre <- telco[set, ]
+telcoTest <- telco[-set, ]
+
+paste("telcoTrain_Pre has", nrow(telcoTrain_Pre), "rows which is", sprintf("%.2f",100 * nrow(telcoTrain_Pre)/nrow(telco)), "% of the dataset")
+paste("telcoTest has", nrow(telcoTest), "rows which is", sprintf("%.2f",100 * nrow(telcoTest)/nrow(telco)), "% of the dataset")
+
+# Second split: 80% training and 20% validation from telcoTrain_Pre
+
+trainSampleSize <- floor(0.8 * nrow(telcoTrain_Pre))
+set <- sample(seq_len(nrow(telcoTrain_Pre)), size = trainSampleSize)
+
+telcoTrain <- telcoTrain_Pre[set, ]
+telcoValidate <- telcoTrain_Pre[-set, ]
+
+paste("telcoTrain has", nrow(telcoTrain), "rows which is", sprintf("%.2f",100 * nrow(telcoTrain)/nrow(telcoTrain_Pre)), "% of the training set")
+paste("telcoValidate has", nrow(telcoValidate), "rows which is", sprintf("%.2f",100 * nrow(telcoValidate)/nrow(telcoTrain_Pre)), "% of the training set")
+
+```
+
+# Model Fitting
+
+### Exercise 7 (Logistic Regression)
+
+```{r}
+
+
+telcoTrain.glm <- glm(Churn ~ tenure + MonthlyCharges + TotalCharges, data=telcoTrain, family= binomial)
+
+summary(telcoTrain.glm)
+```
+
+### Exercise 8 (Interpret coefficients)
+
+1.  tenure: -0.006527
+    -   Interpretation: For each added month of tenure, the odds of customer churning decreases by 0.006527. So that means that if the customer stays with the company longer, the likelihood of them churning decreases. Also implying that customer might feel like they don't want to churn because they are satisfied with their offers/plans.
+2.  MonthlyCharges: 0.003027
+    -   Interpretation: For each additional dollar that the company charges per month, the odds of customer churning increases by 0.003027. So that means if the customer gets charged more per month, they are more likely to churn. Also implying that customer may be unsatisfied with the given offers/plans from the company.
+3.  TotalCharges: 0.00001373
+    -   Interpretation: For each extra dollar that the company makes from the customer, the odds of customer churning is 0.00001373 more. So that means if the customer's total charge increases, the more likely that the customer will churn. This predictor isn't as significant as the other two, but it can suggest that the customer that spends more total money on the company are more likely to churn.
+
+### Exercise 9 (Your Logistic Regression)
+
+```{r}
+
+# Now we use those predictors that is significant
+telcoTrain.glm9 <- glm(Churn ~ SeniorCitizen + tenure + Contract +
+                          PaymentMethod + PaperlessBilling + 
+                         OnlineSecurity + TechSupport + StreamingMovies + 
+                         InternetService + MonthlyCharges + TotalCharges,
+                       data=telcoTrain, family=binomial)
+
+summary(telcoTrain.glm9)
+
+```
+
+### Exercise 10 (K-Nearest Neighbors Classification)
+
+```{r}
+# Load necessary libraries
+library(caret)
+library(dplyr)
+
+# Define the training control for cross-validation
+train_control <- trainControl(method = "cv", number = 10)
+
+# Train KNN model
+# Specify a grid of k values (for example, from 1 to 20)
+k_values <- data.frame(k = seq(1, 50, by = 5))  # Example k values
+
+knn_model <- train(Churn ~ SeniorCitizen + tenure + Contract +
+                          PaymentMethod + PaperlessBilling + 
+                         OnlineSecurity + TechSupport + StreamingMovies + 
+                         InternetService + MonthlyCharges + TotalCharges,
+                       data=telcoTrain,
+                   method = "knn",
+                   trControl = train_control,
+                   tuneGrid = k_values)
+
+# Display the results
+print(knn_model)
+plot(knn_model)
+```
+
+As per the accuracy value above, the optimal model uses k = `r knn_model$bestTune$k` with the accuracy of
