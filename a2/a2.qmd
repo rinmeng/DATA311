@@ -270,11 +270,6 @@ logistic_pred_class_q9 <- ifelse(logistic_pred_q9 > 0.5, "Yes", "No")
 logistic_conf_matrix_q9 <- confusionMatrix(factor(logistic_pred_class_q9), telcoTest$Churn)
 print(logistic_conf_matrix_q9$table)
 
-# Exercise 10
-knn_predictions <- predict(knn_model, newdata = telcoTest)
-knn_conf_matrix <- confusionMatrix(knn_predictions, telcoTest$Churn)
-print(knn_conf_matrix$table)
-
 # Exercise 11
 knn_pred_optimal <- predict(knn_model_optimal, newdata = telcoTest)
 knn_conf_matrix_optimal <- confusionMatrix(knn_pred_optimal, telcoTest$Churn)
@@ -307,10 +302,11 @@ $$\
 |------------------------------------------|-------------------|
 | Basic Logistic Regression, Exercise 7    | `r 254/(254+307)` |
 | My Logistic Regression Model, Exercise 9 | `r 311/(311+250)` |
-| KNN Model, Exercise 10                   | `r 248/(248+313)` |
 | Retrained KNN Model, Exercise 11         | `r 247/(247+314)` |
 | LDA, Exercise 13                         | `r 151/(151+410)` |
 | QDA, Exercise 14                         | `r 420/(420+141)` |
+
+Overall, we can clearly see that the QDA model is the winner here, giving us `r round(420/(420+141)*100, 2)`% accuracy of customer who churned.
 
 ### Exercise 17 (Bootstrapping for Uncertainty)
 
@@ -319,31 +315,42 @@ $$\
 library(boot)
 library(MASS)  # For QDA model
 
-# Define the statistic of interest (e.g., accuracy)
-stats <- function(data, indices) {
+# Create a function to calculate the statistic of interest
+recall_stats <- function(data, indices) {
   sample_data <- data[indices, ]  # Create bootstrap sample
   
-  # Fit QDA model using the predefined formula
+  # Fit QDA model using the formula above
   fit <- qda(Churn ~ tenure + TotalCharges, data = sample_data)
   
-  # Predict on the resampled data and calculate accuracy
+  # Predict on the resampled data
   predictions <- predict(fit, sample_data)$class
-  accuracy <- mean(predictions == sample_data$Churn)
   
-  return(accuracy)  # Return the statistic (e.g., accuracy)
+  # Calculate recall
+  true_positives <- sum(predictions == "Yes" & sample_data$Churn == "Yes")
+  total_actual_positives <- sum(sample_data$Churn == "Yes")
+  recall <- true_positives / total_actual_positives
+  
+  return(recall)
 }
 
-# Set the number of bootstrap samples
+# Number of bootstrap samples
 B <- 1000
 
 # Set a seed for reproducibility
 set.seed(6663492)
 
 # Perform bootstrapping
-boot_results <- boot(data = telcoTrain, statistic = stats, R = B)
+boot_recall_results <- boot(data = telcoTrain, statistic = recall_stats, R = B)
 
 # View the results
-print(boot_results)
+print(boot_recall_results)
 
+# Calculate the 95% confidence interval
+ci_95 <- boot.ci(boot_recall_results, type = "perc")
+print(ci_95)
 
 ```
+
+The original value at 0.7148318 implies that our QDA model correctly identifies 71.5% of all customer who churned, and the bias of -0.0012 implies that our bootstrapping recall is very close towards the original recall.
+
+Our 95% confidence interval tells us that, our accuracy of identifying customer who churns can very between 68% and 74% with a different data.
