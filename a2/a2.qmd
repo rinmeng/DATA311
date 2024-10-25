@@ -315,5 +315,35 @@ $$\
 ### Exercise 17 (Bootstrapping for Uncertainty)
 
 ```{r}
+# Load necessary libraries
+library(boot)
+library(MASS)  # For QDA model
+
+# Define the statistic of interest (e.g., accuracy)
+stats <- function(data, indices) {
+  sample_data <- data[indices, ]  # Create bootstrap sample
+  
+  # Fit QDA model using the predefined formula
+  fit <- qda(Churn ~ tenure + TotalCharges, data = sample_data)
+  
+  # Predict on the resampled data and calculate accuracy
+  predictions <- predict(fit, sample_data)$class
+  accuracy <- mean(predictions == sample_data$Churn)
+  
+  return(accuracy)  # Return the statistic (e.g., accuracy)
+}
+
+# Set the number of bootstrap samples
+B <- 1000
+
+# Set a seed for reproducibility
+set.seed(6663492)
+
+# Perform bootstrapping
+boot_results <- boot(data = telcoTrain, statistic = stats, R = B)
+
+# View the results
+print(boot_results)
+
 
 ```
