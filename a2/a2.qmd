@@ -15,7 +15,7 @@ editor: visual
 ### Exercise 1
 
 a\. Classification\
-d. Unsupervised
+d. Supervised
 
 ### Exercise 2 (Data Preparing and Summary)
 
@@ -65,6 +65,9 @@ Imbalanced class: The No's are marginally larger than the Yes's. This ultimately
 ### Exercise 4 (Data Visualization for Categorical Variables)
 
 ```{r}
+
+
+
 churnPlot <- function(predictor) {
   ggplot(telco, aes_string(x = predictor, fill = "Churn")) +  # Use aes_string for dynamic x aesthetic
     geom_bar(position = "fill") +
@@ -74,7 +77,7 @@ churnPlot <- function(predictor) {
 
 # Identify categorical predictors
 predictors <- colnames(telco)
-exclude_columns <- c("customerID","Churn", "MonthlyCharges", "TotalCharges","tenure")
+exclude_columns <- c("customerID","Churn", "MonthlyCharges", "TotalCharges","tenure","tenure_bins","TotalCharges_bins","MonthlyCharges_bin")
 predictors <- predictors[!predictors %in% exclude_columns]
 
 
@@ -130,26 +133,16 @@ Based on these plots, the continuous variable that seems to be associated with t
 ### Exercise 6 (Data Splitting)
 
 ```{r}
+set.seed(51940633)
 # First split: 70% training and 30% test
 sampleSize <- floor(0.7 * nrow(telco))
 set <- sample(seq_len(nrow(telco)), size = sampleSize)
 
-telcoTrain_Pre <- telco[set, ]
+telcoTrain <- telco[set, ]
 telcoTest <- telco[-set, ]
 
-paste("telcoTrain_Pre has", nrow(telcoTrain_Pre), "rows which is", sprintf("%.2f",100 * nrow(telcoTrain_Pre)/nrow(telco)), "% of the dataset")
+paste("telcoTrain has", nrow(telcoTrain), "rows which is", sprintf("%.2f",100 * nrow(telcoTrain)/nrow(telco)), "% of the dataset")
 paste("telcoTest has", nrow(telcoTest), "rows which is", sprintf("%.2f",100 * nrow(telcoTest)/nrow(telco)), "% of the dataset")
-
-# Second split: 80% training and 20% validation from telcoTrain_Pre
-
-trainSampleSize <- floor(0.8 * nrow(telcoTrain_Pre))
-set <- sample(seq_len(nrow(telcoTrain_Pre)), size = trainSampleSize)
-
-telcoTrain <- telcoTrain_Pre[set, ]
-telcoValidate <- telcoTrain_Pre[-set, ]
-
-paste("telcoTrain has", nrow(telcoTrain), "rows which is", sprintf("%.2f",100 * nrow(telcoTrain)/nrow(telcoTrain_Pre)), "% of the training set")
-paste("telcoValidate has", nrow(telcoValidate), "rows which is", sprintf("%.2f",100 * nrow(telcoValidate)/nrow(telcoTrain_Pre)), "% of the training set")
 
 ```
 
@@ -159,7 +152,7 @@ paste("telcoValidate has", nrow(telcoValidate), "rows which is", sprintf("%.2f",
 
 ```{r}
 
-
+set.seed(51940633)
 telcoTrain.glm <- glm(Churn ~ tenure + MonthlyCharges + TotalCharges, data=telcoTrain, family= binomial)
 
 summary(telcoTrain.glm)
@@ -167,41 +160,39 @@ summary(telcoTrain.glm)
 
 ### Exercise 8 (Interpret coefficients)
 
-1.  tenure: -0.006527
-    -   Interpretation: For each added month of tenure, the odds of customer churning decreases by 0.006527. So that means that if the customer stays with the company longer, the likelihood of them churning decreases. Also implying that customer might feel like they don't want to churn because they are satisfied with their offers/plans.
-2.  MonthlyCharges: 0.003027
-    -   Interpretation: For each additional dollar that the company charges per month, the odds of customer churning increases by 0.003027. So that means if the customer gets charged more per month, they are more likely to churn. Also implying that customer may be unsatisfied with the given offers/plans from the company.
-3.  TotalCharges: 0.00001373
-    -   Interpretation: For each extra dollar that the company makes from the customer, the odds of customer churning is 0.00001373 more. So that means if the customer's total charge increases, the more likely that the customer will churn. This predictor isn't as significant as the other two, but it can suggest that the customer that spends more total money on the company are more likely to churn.
+1.  tenure: -0.0645466
+    -   Interpretation: For each added month of tenure, the odds of customer churning decreases by 0.0645466. So that means that if the customer stays with the company longer, the likelihood of them churning decreases. Also implying that customer might feel like they don't want to churn because they are satisfied with their offers/plans.
+2.  MonthlyCharges: 0.0305762
+    -   Interpretation: For each additional dollar that the company charges per month, the odds of customer churning increases by 0.0305762. So that means if the customer gets charged more per month, they are more likely to churn. Also implying that customer may be unsatisfied with the given offers/plans from the company.
+3.  TotalCharges: 0.0001249
+    -   Interpretation: For each extra dollar that the company makes from the customer, the odds of customer churning is 0.0001249 more. So that means if the customer's total charge increases, the more likely that the customer will churn. This predictor isn't as significant as the other two, but it can suggest that the customer that spends more total money on the company are more likely to churn.
 
 ### Exercise 9 (Your Logistic Regression)
 
 ```{r}
-
+set.seed(51940633)
 # Now we use those predictors that is significant
-telcoTrain.glm9 <- glm(Churn ~ SeniorCitizen + tenure + Contract +
+telcoTrain.glm9 <- glm(Churn ~ SeniorCitizen + tenure * Contract +
                           PaymentMethod + PaperlessBilling + 
                          OnlineSecurity + TechSupport + StreamingMovies + 
                          InternetService + MonthlyCharges + TotalCharges,
                        data=telcoTrain, family=binomial)
-
 summary(telcoTrain.glm9)
-
 ```
 
 ### Exercise 10 (K-Nearest Neighbors Classification)
 
 ```{r}
-# Load necessary libraries
 library(caret)
 library(dplyr)
+set.seed(51940633)
 
 # Define the training control for cross-validation
-train_control <- trainControl(method = "cv", number = 10)
+control_10fold <- trainControl(method = "cv", number = 10)
 
 # Train KNN model
-# Specify a grid of k values (for example, from 1 to 20)
-k_values <- data.frame(k = seq(1, 50, by = 5))  # Example k values
+# Specify a grid of k values (for example, from 1 to 50)
+k_values <- data.frame(k = seq(1, 50, by = 1)) 
 
 knn_model <- train(Churn ~ SeniorCitizen + tenure + Contract +
                           PaymentMethod + PaperlessBilling + 
@@ -209,7 +200,7 @@ knn_model <- train(Churn ~ SeniorCitizen + tenure + Contract +
                          InternetService + MonthlyCharges + TotalCharges,
                        data=telcoTrain,
                    method = "knn",
-                   trControl = train_control,
+                   trControl = control_10fold,
                    tuneGrid = k_values)
 
 # Display the results
@@ -217,4 +208,112 @@ print(knn_model)
 plot(knn_model)
 ```
 
-As per the accuracy value above, the optimal model uses k = `r knn_model$bestTune$k` with the accuracy of
+As per the accuracy value above, the optimal model uses k = `r knn_model$bestTune$k`.
+
+### Exercise 11 (Retrain KNN)
+
+```{r}
+library(caret)
+library(dplyr)
+set.seed(51940633)
+control_10fold <- trainControl(method = "cv", number = 10)
+
+optimal_k <- data.frame(k = knn_model$bestTune$k)
+
+knn_model_optimal <- train(Churn ~ SeniorCitizen + tenure + Contract +
+                                 PaymentMethod + PaperlessBilling + 
+                                 OnlineSecurity + TechSupport + StreamingMovies + 
+                                 InternetService + MonthlyCharges + TotalCharges,
+                          data = telcoTrain,
+                          method = "knn",
+                          trControl = control_10fold,
+                          tuneGrid = optimal_k)
+
+print(knn_model_optimal)
+
+```
+
+### Exercise 12 (Seeds for KNN)
+
+The non-deterministic of the algorithm is that it that when we apply techniques like k-fold cross validation, the data is randomly split. Which means the data and outcome will vary slightly each run due to the randomness, which can lead to different performance in accuracy.
+
+### Exercise 13 (Linear Discriminant Analysis (LDA))
+
+```{r}
+library(MASS)
+
+lda_model <- lda(Churn ~ tenure + TotalCharges, data = telcoTrain)
+print(lda_model)
+```
+
+### Exercise 14 (Quadratic Discriminant Analysis)
+
+```{r}
+library(MASS)
+
+qda_model <- qda(Churn ~ tenure + TotalCharges, data = telcoTrain)
+print(qda_model)
+```
+
+### Exercise 15 (Confusion Matrices)
+
+```{r}
+# Exercise 7
+logistic_pred_q7 <- predict(telcoTrain.glm, newdata = telcoTest, type = "response")
+logistic_pred_class_q7 <- ifelse(logistic_pred_q7 > 0.5, "Yes", "No")
+logistic_conf_matrix_q7 <- confusionMatrix(factor(logistic_pred_class_q7), telcoTest$Churn)
+print(logistic_conf_matrix_q7$table)
+
+# Exercise 9
+logistic_pred_q9 <- predict(telcoTrain.glm9, newdata = telcoTest, type = "response")
+logistic_pred_class_q9 <- ifelse(logistic_pred_q9 > 0.5, "Yes", "No")
+logistic_conf_matrix_q9 <- confusionMatrix(factor(logistic_pred_class_q9), telcoTest$Churn)
+print(logistic_conf_matrix_q9$table)
+
+# Exercise 10
+knn_predictions <- predict(knn_model, newdata = telcoTest)
+knn_conf_matrix <- confusionMatrix(knn_predictions, telcoTest$Churn)
+print(knn_conf_matrix$table)
+
+# Exercise 11
+knn_pred_optimal <- predict(knn_model_optimal, newdata = telcoTest)
+knn_conf_matrix_optimal <- confusionMatrix(knn_pred_optimal, telcoTest$Churn)
+print(knn_conf_matrix_optimal$table)
+
+# Exercise 13
+lda_pred <- predict(lda_model, newdata = telcoTest)
+lda_conf_matrix <- confusionMatrix(lda_pred$class, telcoTest$Churn)
+print(lda_conf_matrix$table)
+
+# Exercise 14
+qda_pred <- predict(qda_model, newdata = telcoTest)
+qda_conf_matrix <- confusionMatrix(qda_pred$class, telcoTest$Churn)
+print(qda_conf_matrix$table)
+```
+
+### Exercise 16 (Model Comparison)
+
+The recall/true positive rate formula is given by
+
+$$
+\text{Recall} = \frac{\text{True Positive}}{\text{True Positive} + \text{False Negatives}}
+$$
+
+$$
+ = \frac{\text{Prediction: Yes, Reference: Yes}}{(\text{Prediction: Yes, Reference: Yes}) + (\text{Prediction: No, Reference: Yes})}
+$$\
+
+| Model                                    | Recall            |
+|------------------------------------------|-------------------|
+| Basic Logistic Regression, Exercise 7    | `r 254/(254+307)` |
+| My Logistic Regression Model, Exercise 9 | `r 311/(311+250)` |
+| KNN Model, Exercise 10                   | `r 248/(248+313)` |
+| Retrained KNN Model, Exercise 11         | `r 247/(247+314)` |
+| LDA, Exercise 13                         | `r 151/(151+410)` |
+| QDA, Exercise 14                         | `r 420/(420+141)` |
+
+### Exercise 17 (Bootstrapping for Uncertainty)
+
+```{r}
+
+```
