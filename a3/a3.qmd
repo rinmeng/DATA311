@@ -1,0 +1,215 @@
+---
+title: "Assignment 3"
+subtitle: "DATA311 - Machine Learning"
+author: "Rin Meng, 51940633"
+toc: true
+format:
+  html:
+    embed-resources: true
+    df-print: paged
+editor: visual
+---
+
+# **Exploratory Data Analysis**
+
+## Exercise 1
+
+```{r}
+sal <- read.csv('datasalaries.csv', header = TRUE)
+
+sal <- na.omit(sal)
+
+sal$company <- as.factor(sal$company)
+sal$gender <- as.factor(sal$gender)
+sal$Race <- as.factor(sal$Race)
+sal$Education <- as.factor(sal$Education)
+
+str(sal)
+
+```
+
+## Exercise 2
+
+```{r}
+set.seed(51940633)
+
+sample_size <- floor(0.5 * nrow(sal))
+set <- sample(seq_len(nrow(sal)), size = sample_size)
+
+sal_train <- sal[set, ]
+sal_test <- sal[-set, ]
+
+nrow(sal_train)
+nrow(sal_test)
+```
+
+# **Decision Trees**
+
+## Exercise 3
+
+```{r}
+library(rpart)
+library(rpart.plot)
+
+tree_model <- rpart(salary ~ ., data = sal_train, method = "anova")
+
+rpart.plot(tree_model, main = "Decision Tree for Salary")
+```
+
+Root Node
+
+-   People had an average salary of \$244k.
+
+-   Represents 100% of the people (before splitting)
+
+1.  First Split (Years of Experience \< 8)
+
+-   If they had years of experience \< 8 (left branch)
+
+    -   Average salary \$197k
+
+    -   60% of the people had less than 8 years of experience
+
+-   If the had years of experience \> 8 (right branch)
+
+    -   Average salary \$314k
+
+    -   40% of the people had more than 8 years of experience
+
+2.  Second Split (Salary based on company)
+
+-   People with less than 8 years of experience, and their company is: Amazon, Microsoft, Oracle (left branch)
+
+    -   The 36% of them with Amazon, Microsoft, Oracle had average salary of \$168k
+
+    -   The 25% of them with Google, Facebook, and Apple, had average salary of \$239k
+
+-   People with more than 8 years of experience, and their company is: Amazon, Apple, Microsoft, Oracle (right branch)
+
+    -   The 28% of them with Amazon, Apple, Microsoft, Oracle had an average salary of \$275k
+
+    -   The 12% of them with Google, Facebook had an average salary of \$410k.
+
+3.  Third Split (Applicable only to people with more than 8 years of experience)
+
+-   People with Amazon, Apple, Microsoft, Oracle
+
+    -   People that had less than 14 years of experience,
+
+        -   Had an average salary of \$247k
+
+        -   16% of the people matches this criteria
+
+    -   People that had more than 14 years of experience
+
+        -   Had an average salary of \$314k
+
+        -   12% of the people matches this criteria
+
+-   People with Google, Facebook
+
+    -   People that had less than 17 years of experience
+
+        -   Had an average salary of \$363k
+
+        -   10% of the people matches this criteria
+
+    -   People that had more than 17 years of experience
+
+        -   Had an average salary of \$628k
+
+        -   2% of the people matches this criteria
+
+## Exercise 4
+
+```{r}
+tree_prediciton <- predict(tree_model, newdata=sal_test)
+
+
+residuals <- tree_prediciton - sal_test$salary
+
+rmse <- sqrt(mean(residuals^2))
+print(rmse)
+
+sd(sal$salary)
+
+```
+
+This means that on average, our prediction is off from the actual prediction by \~ \$126k.
+
+# **Random Forest**
+
+## Exercise 5
+
+```{r}
+library(randomForest)
+set.seed(51940633)
+
+rF_model <- randomForest(salary ~ ., data= sal_train, ntree = 500, importance = TRUE)
+
+print(rF_model)
+importance(rF_model)
+varImpPlot(rF_model)
+```
+
+The random forest model is explaining only 28.17% of variance in the salary data , and the mean squared residual is a bit high, suggesting the model might not be a great fit or needs further refinement.
+
+With the importance function and the importance plot, we can clearly see that the predictors that contributes the most is the company (21.88%), yearsofexperience (21.06%) and yearsatcompany (9.41%), because % Increase of MSE (%IncMSE) indicates the impact of the predictor on the model's performance, and when the value of that predictor is randomly shuffled, the MSE increases by the percentage given (importance function).
+
+Therefore, a high %IncMSE = model is getting worse because it's losing its important predictors, which implies that predictors company and yearsofexperience has more significant impact, compared to other variables like Race, gender, and Education.
+
+## Exercise 6
+
+```{r}
+rF_prediction <- predict(rF_model, newdata = sal_test)
+
+rF_rmse <- sqrt(mean((sal_test$salary - rF_prediction)^2))
+
+
+rF_mse <- mean(rF_model$mse)
+rF_oob_rmse <- sqrt(rF_mse)
+
+print(paste("Test RMSE:", rF_rmse))
+print(paste("OOB RMSE:", rF_oob_rmse))
+```
+
+The model performs relatively better than the tree model, our prediction is now \~ \$113k off from the actual prediction. Out-of-bag RSME is higher than our Test RMSE, therefore suggesting the model performs performs better on the test data (over fitting).
+
+## Exercise 7
+
+```{r}
+var_importance <- importance(rF_model)
+
+print(var_importance)
+```
+
+According to this variance important table, we can clearly see that the yearsofexperience is the most important feature of prediction to the model, with a value of $2.77 \times 10^{13}$ of Increased Node Purity (which reflects how much each variable help improving the splits of data), implying that yearsofexperience plays the largest role in reducing the impurity of nodes when splitting.
+
+## Exercise 8
+
+```{r}
+set.seed(51940633*2)
+rF_bagging <- randomForest(salary ~ ., data = sal_train, ntree = 500, mtry = ncol(sal_train) - 1, importance = TRUE)
+
+print(rF_bagging)
+```
+
+## Exercise 9
+
+```{r}
+rF_bagging_predictions <- predict(rF_bagging, newdata = sal_test)
+test_rmse <- sqrt(mean((sal_test$salary - rF_bagging_predictions)^2))
+
+oob_mse <- mean(rF_bagging$mse)
+oob_rmse <- sqrt(oob_mse)
+
+print(paste("Test RMSE:", test_rmse))
+print(paste("OOB RMSE:", oob_rmse))
+```
+
+## Exercise 10
+
+```{r}
+importance(rF_bagging)
+varImpPlot(rF_bagging)
+```
