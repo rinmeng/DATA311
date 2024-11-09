@@ -131,8 +131,6 @@ residuals <- tree_prediciton - sal_test$salary
 rmse <- sqrt(mean(residuals^2))
 print(rmse)
 
-sd(sal$salary)
-
 ```
 
 This means that on average, our prediction is off from the actual prediction by \~ \$126k.
@@ -152,7 +150,7 @@ importance(rF_model)
 varImpPlot(rF_model)
 ```
 
-The random forest model is explaining only 28.17% of variance in the salary data , and the mean squared residual is a bit high, suggesting the model might not be a great fit or needs further refinement.
+The random forest model is explaining only 28.17% of variance in the salary data, and the mean squared residual is a bit high, suggesting the model might not be a great fit or needs further refinement.
 
 With the importance function and the importance plot, we can clearly see that the predictors that contributes the most is the company (21.88%), yearsofexperience (21.06%) and yearsatcompany (9.41%), because % Increase of MSE (%IncMSE) indicates the impact of the predictor on the model's performance, and when the value of that predictor is randomly shuffled, the MSE increases by the percentage given (importance function).
 
@@ -189,7 +187,8 @@ According to this variance important table, we can clearly see that the yearsofe
 
 ```{r}
 set.seed(51940633*2)
-rF_bagging <- randomForest(salary ~ ., data = sal_train, ntree = 500, mtry = ncol(sal_train) - 1, importance = TRUE)
+rF_bagging <- randomForest(salary ~ ., data = sal_train, 
+                           ntree = 500, mtry = ncol(sal_train) - 1, importance = TRUE)
 
 print(rF_bagging)
 ```
@@ -207,9 +206,185 @@ print(paste("Test RMSE:", test_rmse))
 print(paste("OOB RMSE:", oob_rmse))
 ```
 
+Here, we can see that bagging actually performs worst than not. We could only explain 20.87% of the response variable when bagging it, compared to the 28.17% we got earlier. But our Test RMSE is closet to the OOB RMSE, meaning that we have traded off some bias for variance, which could be tolerable because our model in Exercise 6 was overfitting to the training data.
+
 ## Exercise 10
 
 ```{r}
 importance(rF_bagging)
 varImpPlot(rF_bagging)
 ```
+
+The most important feature is still company, yearsofexperience, yearsatcompany but as we observe the graph, the bagging model performs better in distinguishing the significant of a predictor, by giving it more variance (Bias-Variance trade off). By bagging the model, we spread more importance across all features, as we can see clearly in the figure above, that all the points has a slightly higher %IncMSE. Also, interestingly, we found out that Education seems to be explaining more than gender does when we bagged the model.
+
+# **Regularization**
+
+## Exercise 11
+
+```{r}
+train_predictors_matrix <- model.matrix(salary ~ ., data = sal_train)[, -1]
+test_predictors_matrix <- model.matrix(salary ~ ., data = sal_test)[, -1]
+head(test_predictors_matrix)
+head(train_predictors_matrix)
+```
+
+## Exercise 12
+
+```{r}
+library(glmnet)
+
+y <- sal_train$salary
+ridge_model <- glmnet(train_predictors_matrix, y, alpha = 0)
+
+print(ridge_model)
+plot(ridge_model)
+```
+
+## Exercise 13
+
+```{r}
+library(glmnet)
+
+set.seed(51940633)
+
+# Perform cross-validation on the Ridge regression model
+cv_model <- cv.glmnet(x = train_predictors_matrix, y = y, alpha = 0)
+
+# Print out the best lambda values
+best_lambda <- cv_model$lambda.min
+one_se_lambda <- cv_model$lambda.1se
+
+cat("Best lambda (minimizing CV error):", best_lambda, "\n")
+cat("Lambda within 1 standard error:", one_se_lambda, "\n")
+
+
+plot(cv_model)
+
+```
+
+## Exercise 14
+
+```{r}
+ridge_best_model <- glmnet(train_predictors_matrix, y, alpha = 0, lambda = best_lambda)
+
+ridge_predictions <- predict(ridge_best_model, newx = test_predictors_matrix)
+
+test_residuals <- ridge_predictions - sal_test$salary
+test_rmse <- sqrt(mean(test_residuals^2))
+print(paste("Test RMSE for Ridge regression:", test_rmse))
+
+
+```
+
+With the Test RMSE, on average, the Ridge regression model's predictions for salary are off by \$105,667.42 from the actual values in the test set.
+
+## Exercise 15
+
+```{r}
+
+ridge_1se_model <- glmnet(train_predictors_matrix, y, alpha = 0, lambda = one_se_lambda)
+
+# Make predictions on the test set
+ridge_1se_predictions <- predict(ridge_1se_model, newx = test_predictors_matrix)
+
+# Calculate the test RMSE
+test_residuals_1se <- ridge_1se_predictions - sal_test$salary
+test_rmse_1se <- sqrt(mean(test_residuals_1se^2))
+
+# Print the test RMSE for lambda.1se
+print(paste("Test RMSE for Ridge regression with lambda.1se:", test_rmse_1se))
+
+```
+
+Now, on average, the model's predictions for the test set are off by approximately \$133,603.21 from the actual salary values. This is another bias-variance trade off, because we are applying regularization, we lose some accuracy, making our model more prone to variance, therefore, a higher test RMSE with the Ridge regression with `lambda.1se`.
+
+## Exercise 16
+
+```{r}
+# Fit the LASSO model with glmnet (alpha = 1 for LASSO)
+lasso_model <- glmnet(train_predictors_matrix, y, alpha = 1)
+
+# Print the LASSO model coefficients
+print(lasso_model)
+
+# Plot the LASSO model path
+plot(lasso_model, xvar = "lambda", label = TRUE)
+
+```
+
+## Exercise 17
+
+```{r}
+# Load necessary library
+library(glmnet)
+
+# Set the seed for reproducibility
+set.seed(123)
+
+# Fit the LASSO model using cross-validation
+lasso_cv <- cv.glmnet(x = train_predictors_matrix, y = y, alpha = 1)
+
+# View the best lambda (lambda that minimizes cross-validation error)
+best_lambda <- lasso_cv$lambda.min
+cat("Best lambda from cross-validation:", best_lambda, "\n")
+
+# Plot the cross-validation error curve
+plot(lasso_cv)
+
+# You can also check the lambda value within one standard error of the minimum
+best_lambda_1se <- lasso_cv$lambda.1se
+cat("Lambda within 1 SE of minimum:", best_lambda_1se, "\n")
+
+```
+
+## Exercise 18
+
+```{r}
+# Calculate the predictions for the test set using the best lambda
+lasso_best_model <- glmnet(x = train_predictors_matrix, y = y, alpha = 1, lambda = lasso_cv$lambda.min)
+
+# Make predictions on the test data
+test_predictions <- predict(lasso_best_model, s = best_lambda, newx = test_predictors_matrix)
+
+test_y <- sal_test$salary
+# Calculate the RMSE on the test set
+test_rmse <- sqrt(mean((test_predictions - test_y)^2))
+
+# Print the test RMSE
+cat("Test RMSE for LASSO model with best lambda:", test_rmse, "\n")
+
+```
+
+## Exercise 19
+
+```{r}
+# Use the lambda.1se value from the cross-validation output
+best_lambda_1se <- lasso_cv$lambda.1se
+cat("Best lambda within 1 SE of minimum:", best_lambda_1se, "\n")
+
+# Fit the LASSO model using the best lambda within 1 SE of minimum
+lasso_best_model_1se <- glmnet(x = train_predictors_matrix, y = y, alpha = 1, lambda = best_lambda_1se)
+
+# Make predictions on the test set
+test_predictions_1se <- predict(lasso_best_model_1se, s = best_lambda_1se, newx = test_predictors_matrix)
+
+# Calculate the RMSE on the test set using the predictions
+test_rmse_1se <- sqrt(mean((test_predictions_1se - test_y)^2))
+
+# Print the test RMSE for the best lambda within 1 SE
+cat("Test RMSE for LASSO model with lambda within 1 SE of minimum:", test_rmse_1se, "\n")
+```
+
+## Exercise 20
+
+| Exercise \#       | RMSE      | OOB RMSE |
+|-------------------|-----------|----------|
+| 4 (trees)         | 126144.5  | \-       |
+| 6 (random forest) | 113525.9  | 144930.8 |
+| 8 (rf bagging)    | 136067.9  | 152175.3 |
+| 13 (ridge)        | 105667.4  | \-       |
+| 15 (ridge 1se)    | 133603.2  | \-       |
+| 16 (LASSO)        | 106000.3  | \-       |
+| 19 (LASSO 1se)    | 130294    | \-       |
+
+Overall, we can clearly see that the best model that performed on our test data set was the ridge model, on average, predictions of salary made by the ridge model is off by about \~\$105k.
